@@ -1,0 +1,55 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# config.yaml — Central configuration for the Automated Drift Monitor
+# ──────────────────────────────────────────────────────────────────────────────
+
+# Paths to artifacts produced by the training pipeline
+paths:
+  baseline_stats: "models/baseline_stats.json"
+  label_encoders: "models/label_encoders.pkl"
+  model_metadata: "models/model_metadata.json"
+  trained_model:  "models/loan_model.pkl"
+  raw_data:       "data/raw/loan_data.csv"
+
+# Drift detection settings
+drift_detection:
+  # Where incoming production CSVs are placed
+  production_data_dir: "data/production"
+
+  # Where JSON drift reports are written
+  report_output_dir: "logs/drift_reports"
+
+  # Columns to drop before comparison (same as training)
+  drop_columns:
+    - "Loan_ID"
+
+  # Target column name (excluded from drift checks)
+  target_column: "Loan_Status"
+
+  # Minimum number of rows required in a production batch for drift
+  # detection to run.  Small datasets give unreliable statistics.
+  min_sample_size: 50
+
+  thresholds:
+    # ── Numeric features ──────────────────────────────────────────────
+    # Flag a feature if its mean shifts by more than this many baseline
+    # standard deviations.  Example: 2.0 means "flag if production
+    # mean is more than 2 sigma away from baseline mean."
+    mean_shift_factor: 2.0
+
+    # Flag a feature if its production min or max extends beyond the
+    # baseline range by more than this fraction of the range width.
+    # Example: 0.20 means "flag if production values stretch 20%
+    # beyond the baseline min-max."
+    range_extension_factor: 0.20
+
+    # ── Categorical features ─────────────────────────────────────────
+    # Flag a categorical feature if the absolute difference in any
+    # category's normalized frequency exceeds this value.
+    # Example: 0.15 means "flag if any category's share changed by
+    # more than 15 percentage points."
+    categorical_frequency_threshold: 0.15
+
+# Backend API settings
+backend:
+  host: "0.0.0.0"
+  port: 8000

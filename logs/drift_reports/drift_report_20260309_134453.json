@@ -1,0 +1,244 @@
+{
+  "timestamp": "2026-03-09T13:44:53.351997",
+  "num_rows": 100,
+  "features": {
+    "Gender": {
+      "baseline": {
+        "mean": 0.845213849287169,
+        "std": 0.4195144242267915,
+        "min": 0.0,
+        "max": 2.0,
+        "q25": 1.0,
+        "q75": 1.0
+      },
+      "production": {
+        "mean": 0.94,
+        "std": 0.34289321599553063,
+        "min": 0.0,
+        "max": 2.0,
+        "q25": 1.0,
+        "q75": 1.0
+      },
+      "drift_detected": false,
+      "reasons": []
+    },
+    "Married": {
+      "baseline": {
+        "mean": 1.305498981670061,
+        "std": 0.9499464568686639,
+        "min": 0.0,
+        "max": 2.0,
+        "q25": 0.0,
+        "q75": 2.0
+      },
+      "production": {
+        "mean": 1.45,
+        "std": 0.8918825850158447,
+        "min": 0.0,
+        "max": 2.0,
+        "q25": 0.0,
+        "q75": 2.0
+      },
+      "drift_detected": false,
+      "reasons": []
+    },
+    "Dependents": {
+      "baseline": {
+        "mean": 0.814663951120163,
+        "std": 1.078674942574751,
+        "min": 0.0,
+        "max": 4.0,
+        "q25": 0.0,
+        "q75": 2.0
+      },
+      "production": {
+        "mean": 0.98,
+        "std": 1.1632417260102534,
+        "min": 0.0,
+        "max": 4.0,
+        "q25": 0.0,
+        "q75": 2.0
+      },
+      "drift_detected": false,
+      "reasons": []
+    },
+    "Education": {
+      "baseline": {
+        "mean": 0.22606924643584522,
+        "std": 0.41871112648226005,
+        "min": 0.0,
+        "max": 1.0,
+        "q25": 0.0,
+        "q75": 0.0
+      },
+      "production": {
+        "mean": 0.25,
+        "std": 0.4351941398892446,
+        "min": 0.0,
+        "max": 1.0,
+        "q25": 0.0,
+        "q75": 0.25
+      },
+      "drift_detected": false,
+      "reasons": []
+    },
+    "Self_Employed": {
+      "baseline": {
+        "mean": 0.32382892057026474,
+        "std": 0.699141166483635,
+        "min": 0.0,
+        "max": 2.0,
+        "q25": 0.0,
+        "q75": 0.0
+      },
+      "production": {
+        "mean": 0.39,
+        "std": 0.7371114795831992,
+        "min": 0.0,
+        "max": 2.0,
+        "q25": 0.0,
+        "q75": 0.0
+      },
+      "drift_detected": false,
+      "reasons": []
+    },
+    "ApplicantIncome": {
+      "baseline": {
+        "mean": 5529.997963340123,
+        "std": 6457.784318485518,
+        "min": 210.0,
+        "max": 81000.0,
+        "q25": 2906.0,
+        "q75": 5825.0
+      },
+      "production": {
+        "mean": 15599.85,
+        "std": 14494.74554560438,
+        "min": 3000.0,
+        "max": 117441.0,
+        "q25": 8072.25,
+        "q75": 17867.25
+      },
+      "drift_detected": true,
+      "reasons": [
+        "Max increased beyond range (baseline_max=81000.0000, production_max=117441.0000)"
+      ]
+    },
+    "CoapplicantIncome": {
+      "baseline": {
+        "mean": 1569.5372708509165,
+        "std": 2789.5234746012443,
+        "min": 0.0,
+        "max": 41667.0,
+        "q25": 0.0,
+        "q75": 2241.0
+      },
+      "production": {
+        "mean": 11962.9612000084,
+        "std": 3478.0276227772792,
+        "min": 5064.0,
+        "max": 19755.0,
+        "q25": 9725.0,
+        "q75": 14353.75
+      },
+      "drift_detected": true,
+      "reasons": [
+        "Mean shifted by 3.73\u03c3 (baseline=1569.5373, production=11962.9612)"
+      ]
+    },
+    "LoanAmount": {
+      "baseline": {
+        "mean": 146.52342158859472,
+        "std": 85.38604388965437,
+        "min": 9.0,
+        "max": 700.0,
+        "q25": 100.5,
+        "q75": 165.0
+      },
+      "production": {
+        "mean": 358.55,
+        "std": 171.90652557524842,
+        "min": 117.5,
+        "max": 1200.0,
+        "q25": 258.125,
+        "q75": 400.0
+      },
+      "drift_detected": true,
+      "reasons": [
+        "Mean shifted by 2.48\u03c3 (baseline=146.5234, production=358.5500)",
+        "Max increased beyond range (baseline_max=700.0000, production_max=1200.0000)"
+      ]
+    },
+    "Loan_Amount_Term": {
+      "baseline": {
+        "mean": 341.74338085539716,
+        "std": 65.10794280501875,
+        "min": 12.0,
+        "max": 480.0,
+        "q25": 360.0,
+        "q75": 360.0
+      },
+      "production": {
+        "mean": 346.8,
+        "std": 56.29790889060219,
+        "min": 60.0,
+        "max": 480.0,
+        "q25": 360.0,
+        "q75": 360.0
+      },
+      "drift_detected": false,
+      "reasons": []
+    },
+    "Credit_History": {
+      "baseline": {
+        "mean": 0.8635437881873728,
+        "std": 0.3436224607438535,
+        "min": 0.0,
+        "max": 1.0,
+        "q25": 1.0,
+        "q75": 1.0
+      },
+      "production": {
+        "mean": 0.58,
+        "std": 0.49604496374885826,
+        "min": 0.0,
+        "max": 1.0,
+        "q25": 0.0,
+        "q75": 1.0
+      },
+      "drift_detected": false,
+      "reasons": []
+    },
+    "Property_Area": {
+      "baseline": {
+        "mean": 1.034623217922607,
+        "std": 0.7907777175425902,
+        "min": 0.0,
+        "max": 2.0,
+        "q25": 0.0,
+        "q75": 2.0
+      },
+      "production": {
+        "mean": 1.03,
+        "std": 0.8221061889187953,
+        "min": 0.0,
+        "max": 2.0,
+        "q25": 0.0,
+        "q75": 2.0
+      },
+      "drift_detected": false,
+      "reasons": []
+    }
+  },
+  "overall_drift": true,
+  "drifted_features": [
+    "ApplicantIncome",
+    "CoapplicantIncome",
+    "LoanAmount"
+  ],
+  "summary": {
+    "total_features": 11,
+    "drifted_count": 3,
+    "stable_count": 8
+  }
+}
