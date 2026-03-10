@@ -9,13 +9,13 @@ import { Spotlight } from '@/components/ui/spotlight'
 import { Typewriter } from '@/components/ui/typewriter'
 import { ShaderAnimation } from '@/components/ui/shader-animation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { StatCard } from '@/components/StatCard'
 import { ChartContainer } from '@/components/ChartContainer'
 import { StatusBadge } from '@/components/StatusBadge'
 import { DriftScoreGauge } from '@/components/DriftScoreGauge'
-import {
-    HeartPulse, Activity, Layers, Clock, AlertTriangle,
-} from 'lucide-react'
+import { DriftGauge } from '@/components/dashboard/DriftGauge'
+import { StatusIndicator } from '@/components/dashboard/StatusIndicator'
+import { MetricTile } from '@/components/dashboard/MetricTile'
+import { Layers, Clock } from 'lucide-react'
 import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend,
 } from 'recharts'
@@ -119,43 +119,53 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            {/* ── Stat Cards ── */}
-            <div className="px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                <StatCard
-                    title="Drift Score"
-                    value={driftScore.toFixed(2)}
-                    subtitle={driftStatus.label}
-                    icon={Activity}
-                    accentColor={driftStatus.color}
-                />
-                <StatCard
-                    title="Model Status"
-                    value={health?.status === 'healthy' ? 'Healthy' : 'Down'}
-                    subtitle={model ? `v${model.model_version}` : ''}
-                    icon={HeartPulse}
-                    accentColor={health?.status === 'healthy' ? 'var(--success)' : 'var(--critical)'}
-                />
-                <StatCard
-                    title="Drift Status"
-                    value={latestReport?.overall_drift ? 'Drift Detected' : 'Stable'}
-                    subtitle={latestReport ? `${latestReport.summary.drifted_count} features drifted` : ''}
-                    icon={AlertTriangle}
-                    accentColor={latestReport?.overall_drift ? 'var(--warning)' : 'var(--success)'}
-                />
-                <StatCard
-                    title="Features"
-                    value={latestReport?.summary.total_features ?? model?.feature_names.length ?? 0}
-                    subtitle="Monitored"
-                    icon={Layers}
-                    accentColor="var(--chart-4)"
-                />
-                <StatCard
-                    title="Last Check"
-                    value={latestReport ? new Date(latestReport.timestamp).toLocaleDateString() : 'N/A'}
-                    subtitle={latestReport ? new Date(latestReport.timestamp).toLocaleTimeString() : ''}
-                    icon={Clock}
-                    accentColor="var(--chart-1)"
-                />
+            {/* ── Telemetry Metrics ── */}
+            <div className="px-6 grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6">
+                {/* Left: Drift Severity Gauge */}
+                <DriftGauge score={driftScore} />
+
+                {/* Right: 2×2 grid of status tiles */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <StatusIndicator
+                        type={health?.status === 'healthy' ? 'online' : 'offline'}
+                        title="Model Status"
+                    />
+                    <StatusIndicator
+                        type={
+                            driftScore > 0.4
+                                ? 'high-drift'
+                                : latestReport?.overall_drift
+                                    ? 'drift'
+                                    : 'stable'
+                        }
+                        title="Drift Status"
+                    />
+                    <MetricTile
+                        title="Features"
+                        value={latestReport?.summary.total_features ?? model?.feature_names.length ?? 0}
+                        subtitle="monitored"
+                        icon={Layers}
+                        accentColor="#a78bfa"
+                    />
+                    <MetricTile
+                        title="Last Check"
+                        value={
+                            latestReport
+                                ? (() => {
+                                    const mins = Math.round((Date.now() - new Date(latestReport.timestamp).getTime()) / 60000)
+                                    if (mins < 1) return 'Just now'
+                                    if (mins < 60) return `${mins}m ago`
+                                    const hrs = Math.round(mins / 60)
+                                    if (hrs < 24) return `${hrs}h ago`
+                                    return `${Math.round(hrs / 24)}d ago`
+                                })()
+                                : 'N/A'
+                        }
+                        subtitle={latestReport ? new Date(latestReport.timestamp).toLocaleString() : ''}
+                        icon={Clock}
+                        accentColor="#60a5fa"
+                    />
+                </div>
             </div>
 
             {/* ── Charts Row ── */}
