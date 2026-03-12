@@ -6,7 +6,7 @@ import {
 import { cn } from '@/lib/utils'
 
 const navItems = [
-    { to: '/', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/drift', label: 'Drift Monitoring', icon: Activity },
     { to: '/reports', label: 'Reports', icon: FileText },
     { to: '/predict', label: 'Prediction Tester', icon: FlaskConical },
@@ -61,7 +61,7 @@ export function Layout() {
                 {/* Desktop row */}
                 <div className="flex items-center justify-between w-full gap-x-8">
                     {/* Brand */}
-                    <NavLink to="/" className="flex items-center gap-2 shrink-0">
+                    <NavLink to="/dashboard" className="flex items-center gap-2 shrink-0">
                         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--primary)]">
                             <Cpu className="h-3.5 w-3.5 text-white" />
                         </div>
@@ -76,7 +76,7 @@ export function Layout() {
                             <NavLink
                                 key={to}
                                 to={to}
-                                end={to === '/'}
+                                end={to === '/dashboard'}
                                 className="group"
                             >
                                 {({ isActive }) => (
@@ -130,7 +130,7 @@ export function Layout() {
                             <NavLink
                                 key={to}
                                 to={to}
-                                end={to === '/'}
+                                end={to === '/dashboard'}
                                 className={({ isActive }) => cn(
                                     'flex items-center gap-2 w-full justify-center rounded-lg px-4 py-2.5 text-sm transition-colors',
                                     isActive
