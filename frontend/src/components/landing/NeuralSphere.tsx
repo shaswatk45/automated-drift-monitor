@@ -56,27 +56,27 @@ export const NeuralSphere = ({ isHovered = false }: { isHovered?: boolean }) => 
   }, [nodes]);
 
   return (
-    <div className="relative w-full h-[400px] md:h-[600px] flex items-center justify-center pointer-events-none select-none">
+    <div className="relative w-full h-[450px] md:h-[650px] flex items-center justify-center pointer-events-none select-none">
       <motion.svg
         viewBox="-150 -150 300 300"
-        className="w-full h-full max-w-[500px]"
+        className="w-full h-full max-w-[600px] drop-shadow-[0_0_15px_rgba(30,58,138,0.5)]"
         animate={{
           rotateY: 360,
-          rotateZ: [0, 10, 0],
+          rotateZ: [0, 5, 0],
         }}
         transition={{
-          duration: 20,
+          duration: 25,
           repeat: Infinity,
           ease: "linear",
         }}
       >
         <defs>
           <radialGradient id="nodeGlow">
-            <stop offset="0%" stopColor="var(--primary, #3b82f6)" stopOpacity="1" />
-            <stop offset="100%" stopColor="var(--primary, #3b82f6)" stopOpacity="0" />
+            <stop offset="0%" stopColor="#1e3a8a" stopOpacity="1" />
+            <stop offset="100%" stopColor="#1e3a8a" stopOpacity="0" />
           </radialGradient>
           <filter id="glow">
-            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+            <feGaussianBlur stdDeviation="1.5" result="coloredBlur" />
             <feMerge>
               <feMergeNode in="coloredBlur" />
               <feMergeNode in="SourceGraphic" />
@@ -92,15 +92,15 @@ export const NeuralSphere = ({ isHovered = false }: { isHovered?: boolean }) => 
             y1={nodes[conn.from].y}
             x2={nodes[conn.to].x}
             y2={nodes[conn.to].y}
-            stroke="var(--primary, #3b82f6)"
-            strokeWidth="0.5"
-            initial={{ opacity: 0.1 }}
+            stroke="#1e40af"
+            strokeWidth="0.8"
+            initial={{ opacity: 0.15 }}
             animate={{ 
-              opacity: isHovered ? 0.4 : [0.1, 0.2, 0.1],
-              strokeWidth: isHovered ? 0.8 : 0.5
+              opacity: isHovered ? 0.35 : [0.15, 0.25, 0.15],
+              strokeWidth: isHovered ? 1.2 : 0.8
             }}
             transition={{
-              duration: 2,
+              duration: 3,
               repeat: Infinity,
               ease: "easeInOut",
               delay: Math.random() * 2
@@ -115,10 +115,10 @@ export const NeuralSphere = ({ isHovered = false }: { isHovered?: boolean }) => 
               cx={node.x}
               cy={node.y}
               r={node.r}
-              fill="var(--primary, #3b82f6)"
+              fill="#1d4ed8"
               animate={{
-                opacity: isHovered ? 1 : [0.4, 0.8, 0.4],
-                scale: isHovered ? 1.2 : [1, 1.2, 1],
+                opacity: isHovered ? 0.9 : [0.3, 0.6, 0.3],
+                scale: isHovered ? 1.1 : [1, 1.1, 1],
               }}
               transition={{
                 duration: 2 + Math.random(),
@@ -132,9 +132,9 @@ export const NeuralSphere = ({ isHovered = false }: { isHovered?: boolean }) => 
         ))}
       </motion.svg>
       
-      {/* Ambient background glow */}
-      <div className="absolute inset-0 z-[-1] opacity-20 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-blue-500 rounded-full blur-[100px]" />
+      {/* Ambient background glow - Darker blue */}
+      <div className="absolute inset-0 z-[-1] opacity-30 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-blue-900/40 rounded-full blur-[120px]" />
       </div>
     </div>
   );

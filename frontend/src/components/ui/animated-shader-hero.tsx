@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { cn } from "@/lib/utils";
 
 // Types for component props
@@ -340,131 +341,76 @@ const AnimatedShaderHero: React.FC<HeroProps> = ({
   const canvasRef = useShaderBackground();
 
   return (
-    <div className={cn("relative w-full h-screen overflow-hidden bg-black flex items-center justify-center", className)}>
+    <div className={cn("relative w-full min-h-[200vh] bg-black text-white", className)}>
       <style>{`
         @keyframes fade-in-down {
-          from {
-            opacity: 0;
-            transform: translateY(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(-20px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-        
         @keyframes fade-in-up {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-        
-        .animate-fade-in-down {
-          animation: fade-in-down 0.8s ease-out forwards;
-        }
-        
-        .animate-fade-in-up {
-          animation: fade-in-up 0.8s ease-out forwards;
-          opacity: 0;
-        }
-        
-        .animation-delay-200 {
-          animation-delay: 0.2s;
-        }
-        
-        .animation-delay-400 {
-          animation-delay: 0.4s;
-        }
-        
-        .animation-delay-600 {
-          animation-delay: 0.6s;
-        }
-        
-        .animation-delay-800 {
-          animation-delay: 0.8s;
-        }
-        
-        @keyframes gradient-shift {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        
-        .animate-gradient {
-          background-size: 200% 200%;
-          animation: gradient-shift 3s ease infinite;
-        }
+        .animate-fade-in-down { animation: fade-in-down 0.8s ease-out forwards; }
+        .animate-fade-in-up { animation: fade-in-up 0.8s ease-out forwards; opacity: 0; }
+        .animation-delay-200 { animation-delay: 0.2s; }
+        .animation-delay-400 { animation-delay: 0.4s; }
+        .animation-delay-600 { animation-delay: 0.6s; }
+        .animation-delay-800 { animation-delay: 0.8s; }
       `}</style>
       
       <canvas
         ref={canvasRef}
-        className="absolute inset-x-0 inset-y-0 w-full h-full object-cover touch-none z-0"
+        className="fixed inset-0 w-full h-full object-cover touch-none z-0"
         style={{ background: 'black' }}
       />
 
-      {/* Hero Content Overlay */}
-      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-white pointer-events-none">
-        
-        {/* Pass through children if provided (e.g. Neural Sphere) */}
-        <div className="w-full flex flex-col items-center justify-center pointer-events-auto">
-            {children}
-        </div>
-
-        <div className="text-center space-y-6 max-w-5xl mx-auto px-4 pointer-events-auto">
-          {/* Main Content Sections */}
-          {trustBadge && (
-            <div className="mb-4 animate-fade-in-down">
-                <div className="flex items-center gap-2 px-6 py-2 bg-blue-500/10 backdrop-blur-md border border-blue-400/20 rounded-full text-[10px] tracking-[0.2em] uppercase font-bold text-blue-100/70">
-                {trustBadge.icons?.map((icon, i) => (
-                    <span key={i} className="text-blue-400">{icon}</span>
-                ))}
-                <span>{trustBadge.text}</span>
-                </div>
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <h1 className="text-4xl md:text-7xl lg:text-8xl font-bold bg-gradient-to-r from-blue-200 via-cyan-300 to-indigo-300 bg-clip-text text-transparent animate-fade-in-up animation-delay-200 tracking-tighter">
+      {/* Hero Core - Screen 1: Centered Headlines */}
+      <section className="relative z-10 w-full h-screen flex flex-col items-center justify-center pointer-events-none">
+          <div className="text-center space-y-0 leading-[0.85] pointer-events-auto">
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="text-7xl md:text-[12vw] font-black uppercase tracking-tighter text-white"
+            >
               {headline.line1}
-            </h1>
-            <h1 className="text-4xl md:text-7xl lg:text-8xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-blue-700 bg-clip-text text-transparent animate-fade-in-up animation-delay-400 tracking-tighter">
+            </motion.h1>
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="text-7xl md:text-[12vw] font-black uppercase tracking-tighter text-white"
+            >
               {headline.line2}
-            </h1>
+            </motion.h1>
           </div>
-          
-          <div className="max-w-xl mx-auto animate-fade-in-up animation-delay-600">
-            <p className="text-sm md:text-lg text-blue-100/60 font-light leading-relaxed">
+      </section>
+
+      {/* Hero Secondary - Screen 2: Subtitle, Buttons, and Additional Content */}
+      <section className="relative z-10 w-full min-h-screen flex flex-col items-center justify-center pointer-events-none pb-20">
+        <div className="max-w-4xl mx-auto px-6 text-center space-y-12 pointer-events-auto">
+            {/* Child content (e.g. background text or additional visuals) */}
+            <div className="w-full">
+                {children}
+            </div>
+
+            <p className="text-sm md:text-base text-white/50 font-bold uppercase tracking-[0.4em] leading-relaxed animate-fade-in-up animation-delay-400">
               {subtitle}
             </p>
-          </div>
-          
-          {buttons && (
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10 animate-fade-in-up animation-delay-800">
-              {buttons.primary && (
-                <button 
-                  onClick={buttons.primary.onClick}
-                  className="px-8 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white rounded-full font-bold text-xs uppercase tracking-[0.2em] transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/40"
-                >
-                  {buttons.primary.text}
-                </button>
-              )}
-              {buttons.secondary && (
-                <button 
-                  onClick={buttons.secondary.onClick}
-                  className="px-8 py-3 bg-blue-500/5 hover:bg-blue-500/10 border border-blue-400/20 hover:border-blue-400/40 text-blue-100/70 rounded-full font-bold text-xs uppercase tracking-[0.2em] transition-all duration-300 hover:scale-105 backdrop-blur-sm"
-                >
-                  {buttons.secondary.text}
-                </button>
-              )}
-            </div>
-          )}
+
+            {buttons && buttons.primary && (
+                <div className="pt-4 animate-fade-in-up animation-delay-600">
+                    <button 
+                      onClick={buttons.primary.onClick}
+                      className="px-12 py-6 bg-white text-black hover:bg-neutral-200 transition-colors duration-300 font-black text-sm uppercase tracking-[0.3em] min-w-[240px]"
+                    >
+                      {buttons.primary.text}
+                    </button>
+                </div>
+            )}
         </div>
-      </div>
+      </section>
     </div>
   );
 };

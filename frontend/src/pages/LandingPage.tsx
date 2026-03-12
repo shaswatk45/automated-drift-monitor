@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { NeuralSphere } from "@/components/landing/NeuralSphere";
 import AnimatedShaderHero from "@/components/ui/animated-shader-hero";
 import { PulseBeams } from "@/components/ui/pulse-beams";
 import { cn } from "@/lib/utils";
@@ -50,10 +49,6 @@ export default function LandingPage() {
           line2: "Monitor"
         }}
         subtitle="Detect data drift. Maintain model health. Real-time observability for production machine learning systems."
-        trustBadge={{
-            text: "System Ready: 0x4A6B",
-            icons: ["✨"]
-        }}
         buttons={{
             primary: {
                 text: "Enter Monitoring Console",
@@ -61,35 +56,15 @@ export default function LandingPage() {
             }
         }}
       >
-        {/* Background Typography (Layered behind Sphere but inside Hero) */}
-        <div className="absolute inset-0 flex items-center justify-center z-0 select-none pointer-events-none opacity-40">
-            <h1 className="text-[15vw] md:text-[20vw] font-bold text-white/[0.03] tracking-[0.2em] uppercase font-['Syncopate'] leading-none">
+        {/* Background Typography (Flowing in section 2) */}
+        <div className="w-full flex items-center justify-center opacity-10 py-20 translate-y-20">
+            <h1 className="text-[15vw] md:text-[25vw] font-black text-white tracking-[-0.05em] uppercase leading-none">
             MONITOR
             </h1>
         </div>
-
-        {/* Neural Sphere centerpiece */}
-        <div className="relative z-10 w-full mb-[-100px] md:mb-[-150px]">
-            <NeuralSphere isHovered={isHovered} />
-        </div>
       </AnimatedShaderHero>
 
-      {/* Decorative Overlays */}
-      <div className="absolute top-10 left-10 text-[10px] text-blue-500/30 font-mono select-none z-20">
-        0x4A6B_SYS_READY
-        <br />
-        LN_01: NEURAL_NET_STABLE
-      </div>
-      
-      <div className="absolute top-10 right-10 text-[10px] text-blue-500/30 font-mono select-none text-right z-20">
-        MONITOR_v1.0.0
-        <br />
-        CORE_LOAD: 0.04%
-      </div>
-
-      {/* Pulse Beams wrapping the bottom section or CTA if needed, 
-          but our Hero component already centers the button. 
-          Let's add Pulse Beams as an ambient layer at the bottom. */}
+      {/* Pulse Beams Layer */}
       <div className="absolute bottom-0 left-0 w-full h-1/4 z-0 pointer-events-none opacity-30">
         <PulseBeams 
             beams={ctaBeams} 
