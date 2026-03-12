@@ -65,7 +65,7 @@ export function Layout() {
                         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--primary)]">
                             <Cpu className="h-3.5 w-3.5 text-white" />
                         </div>
-                        <span className="text-sm font-bold tracking-tight text-white hidden sm:inline">
+                        <span className="text-[10px] font-bold tracking-[0.3em] text-white hidden sm:inline uppercase font-['Syncopate']">
                             Drift Monitor
                         </span>
                     </NavLink>

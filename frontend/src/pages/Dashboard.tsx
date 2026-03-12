@@ -15,6 +15,9 @@ import { DriftScoreGauge } from '@/components/DriftScoreGauge'
 import { DriftGauge } from '@/components/dashboard/DriftGauge'
 import { StatusIndicator } from '@/components/dashboard/StatusIndicator'
 import { MetricTile } from '@/components/dashboard/MetricTile'
+import { GlowingEffectDemo } from '@/components/ui/glowing-effect-demo'
+import { GlowingCard } from '@/components/ui/glowing-card'
+import { ContainerScroll } from '@/components/ui/container-scroll-animation'
 import { Layers, Clock } from 'lucide-react'
 import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend,
@@ -119,88 +122,85 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            {/* ── Telemetry Metrics ── */}
-            <div className="px-6 grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6">
-                {/* Left: Drift Severity Gauge */}
-                <DriftGauge score={driftScore} />
+            {/* ── Animated Scroll Section ── */}
+            <ContainerScroll
+                titleComponent={
+                    <div className="flex flex-col items-center gap-4 mb-20">
+                        <span className="text-sm font-semibold tracking-[0.4em] uppercase text-purple-500/80">
+                            Deep Insights
+                        </span>
+                        <h2 className="text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-neutral-500">
+                            Model Health Telemetry
+                        </h2>
+                    </div>
+                }
+            >
+                <div className="flex flex-col gap-12 p-4">
+                    {/* Telemetry Metrics */}
+                    <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6">
+                        <DriftGauge score={driftScore} />
+                        <GlowingEffectDemo
+                            healthStatus={health?.status === 'healthy' ? 'healthy' : 'offline'}
+                            driftStatus={
+                                driftScore > 0.4
+                                    ? 'high-drift'
+                                    : latestReport?.overall_drift
+                                        ? 'drift'
+                                        : 'stable'
+                            }
+                            driftScore={driftScore}
+                            featuresCount={latestReport?.summary.total_features ?? model?.feature_names.length ?? 0}
+                            lastCheck={
+                                latestReport
+                                    ? (() => {
+                                        const mins = Math.round((Date.now() - new Date(latestReport.timestamp).getTime()) / 60000)
+                                        if (mins < 1) return 'Just now'
+                                        if (mins < 60) return `${mins}m ago`
+                                        const hrs = Math.round(mins / 60)
+                                        if (hrs < 24) return `${hrs}h ago`
+                                        return `${Math.round(hrs / 24)}d ago`
+                                    })()
+                                    : 'N/A'
+                            }
+                            lastCheckString={latestReport ? new Date(latestReport.timestamp).toLocaleString() : ''}
+                        />
+                    </div>
 
-                {/* Right: 2×2 grid of status tiles */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <StatusIndicator
-                        type={health?.status === 'healthy' ? 'online' : 'offline'}
-                        title="Model Status"
-                    />
-                    <StatusIndicator
-                        type={
-                            driftScore > 0.4
-                                ? 'high-drift'
-                                : latestReport?.overall_drift
-                                    ? 'drift'
-                                    : 'stable'
-                        }
-                        title="Drift Status"
-                    />
-                    <MetricTile
-                        title="Features"
-                        value={latestReport?.summary.total_features ?? model?.feature_names.length ?? 0}
-                        subtitle="monitored"
-                        icon={Layers}
-                        accentColor="#a78bfa"
-                    />
-                    <MetricTile
-                        title="Last Check"
-                        value={
-                            latestReport
-                                ? (() => {
-                                    const mins = Math.round((Date.now() - new Date(latestReport.timestamp).getTime()) / 60000)
-                                    if (mins < 1) return 'Just now'
-                                    if (mins < 60) return `${mins}m ago`
-                                    const hrs = Math.round(mins / 60)
-                                    if (hrs < 24) return `${hrs}h ago`
-                                    return `${Math.round(hrs / 24)}d ago`
-                                })()
-                                : 'N/A'
-                        }
-                        subtitle={latestReport ? new Date(latestReport.timestamp).toLocaleString() : ''}
-                        icon={Clock}
-                        accentColor="#60a5fa"
-                    />
+                    {/* Charts Row */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <ChartContainer title="Baseline vs Production" subtitle="Numeric feature means">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={numericFeatures} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                                    <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} />
+                                    <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} />
+                                    <Tooltip
+                                        contentStyle={{
+                                            backgroundColor: 'var(--card)',
+                                            border: '1px solid var(--border)',
+                                            borderRadius: '8px',
+                                            color: 'var(--foreground)',
+                                        }}
+                                    />
+                                    <Legend />
+                                    <Bar dataKey="Baseline" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
+                                    <Bar dataKey="Production" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </ChartContainer>
+
+                        <GlowingCard className="p-0">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-base font-semibold">Overall Drift Score</CardTitle>
+                                <p className="text-xs text-[var(--muted-foreground)]">Ratio of drifted to total features</p>
+                            </CardHeader>
+                            <CardContent className="flex items-center justify-center py-6">
+                                <DriftScoreGauge score={driftScore} />
+                            </CardContent>
+                        </GlowingCard>
+                    </div>
                 </div>
-            </div>
-
-            {/* ── Charts Row ── */}
-            <div className="px-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <ChartContainer title="Baseline vs Production" subtitle="Numeric feature means">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={numericFeatures} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                            <XAxis dataKey="name" tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} />
-                            <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} />
-                            <Tooltip
-                                contentStyle={{
-                                    backgroundColor: 'var(--card)',
-                                    border: '1px solid var(--border)',
-                                    borderRadius: '8px',
-                                    color: 'var(--foreground)',
-                                }}
-                            />
-                            <Legend />
-                            <Bar dataKey="Baseline" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
-                            <Bar dataKey="Production" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
-                        </BarChart>
-                    </ResponsiveContainer>
-                </ChartContainer>
-
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-base font-semibold">Overall Drift Score</CardTitle>
-                        <p className="text-xs text-[var(--muted-foreground)]">Ratio of drifted to total features</p>
-                    </CardHeader>
-                    <CardContent className="flex items-center justify-center py-6">
-                        <DriftScoreGauge score={driftScore} />
-                    </CardContent>
-                </Card>
-            </div>
+            </ContainerScroll>
 
             {/* ── Top Drifting Features Table ── */}
             <div className="px-6">

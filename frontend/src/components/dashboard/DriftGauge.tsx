@@ -1,4 +1,5 @@
 import { RadialBarChart, RadialBar, ResponsiveContainer, PolarAngleAxis } from 'recharts'
+import { GlowingCard } from '@/components/ui/glowing-card'
 
 interface DriftGaugeProps {
     score: number
@@ -12,55 +13,55 @@ function getGaugeColor(score: number) {
 }
 
 export function DriftGauge({ score, label }: DriftGaugeProps) {
-    const { color, glow, label: severityLabel } = getGaugeColor(score)
+    const { color, label: severityLabel } = getGaugeColor(score)
     const percentage = Math.round(score * 100)
     const data = [{ value: percentage, fill: color }]
 
     return (
-        <div
-            className="rounded-xl border border-[var(--border)]/50 bg-[var(--card)]/40 backdrop-blur-md p-6 flex flex-col items-center justify-center transition-all duration-300 hover:shadow-2xl hover:bg-[var(--card)]/60"
-            style={{ boxShadow: `0 0 40px ${glow}, inset 0 1px 0 rgba(255,255,255,0.1)` }}
-        >
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--muted-foreground)] mb-2">
-                {label || 'Drift Severity'}
-            </p>
+        <GlowingCard className="p-0">
+            <div className="flex flex-col items-center justify-center w-full h-full">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--muted-foreground)] mb-2">
+                    {label || 'Drift Severity'}
+                </p>
 
-            <div className="relative w-52 h-52">
-                <ResponsiveContainer width="100%" height="100%">
-                    <RadialBarChart
-                        cx="50%" cy="50%"
-                        innerRadius="72%" outerRadius="100%"
-                        startAngle={225} endAngle={-45}
-                        barSize={14}
-                        data={data}
-                    >
-                        <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
-                        <RadialBar
-                            dataKey="value"
-                            cornerRadius={8}
-                            background={{ fill: 'rgba(255,255,255,0.05)' }}
-                            isAnimationActive={true}
-                            animationDuration={1200}
-                            animationEasing="ease-out"
-                        />
-                    </RadialBarChart>
-                </ResponsiveContainer>
+                <div className="relative w-52 h-52">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <RadialBarChart
+                            cx="50%" cy="50%"
+                            innerRadius="72%" outerRadius="100%"
+                            startAngle={225} endAngle={-45}
+                            barSize={14}
+                            data={data}
+                        >
+                            <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
+                            <RadialBar
+                                dataKey="value"
+                                cornerRadius={8}
+                                background={{ fill: 'rgba(255,255,255,0.05)' }}
+                                isAnimationActive={true}
+                                animationDuration={1200}
+                                animationEasing="ease-out"
+                            />
+                        </RadialBarChart>
+                    </ResponsiveContainer>
 
-                {/* Center text */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-4xl font-bold tabular-nums" style={{ color }}>{score.toFixed(2)}</span>
-                    <span className="text-[10px] uppercase tracking-widest text-[var(--muted-foreground)] mt-1">score</span>
+                    {/* Center text */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-4xl font-bold tabular-nums" style={{ color }}>{score.toFixed(2)}</span>
+                        <span className="text-[10px] uppercase tracking-widest text-[var(--muted-foreground)] mt-1">score</span>
+                    </div>
+                </div>
+
+                {/* Severity badge */}
+                <div
+                    className="mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider"
+                    style={{ backgroundColor: `color-mix(in srgb, ${color} 12%, transparent)`, color }}
+                >
+                    <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: color }} />
+                    {severityLabel}
                 </div>
             </div>
-
-            {/* Severity badge */}
-            <div
-                className="mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider"
-                style={{ backgroundColor: `color-mix(in srgb, ${color} 12%, transparent)`, color }}
-            >
-                <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: color }} />
-                {severityLabel}
-            </div>
-        </div>
+        </GlowingCard>
     )
 }
+
