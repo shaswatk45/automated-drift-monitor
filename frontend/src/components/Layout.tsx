@@ -54,7 +54,7 @@ export function Layout() {
             <header className={cn(
                 'fixed top-5 left-1/2 -translate-x-1/2 z-50',
                 'flex flex-col items-center',
-                'px-6 py-3 glassmorphism',
+                'px-8 py-4 glassmorphism',
                 headerShape,
                 'w-[calc(100%-2rem)] sm:w-auto',
                 'transition-all duration-300 ease-in-out'
@@ -62,11 +62,11 @@ export function Layout() {
                 {/* Desktop row */}
                 <div className="flex items-center justify-between w-full gap-x-8">
                     {/* Brand */}
-                    <NavLink to="/dashboard" className="flex items-center gap-2 shrink-0">
-                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--primary)]">
-                            <Cpu className="h-3.5 w-3.5 text-white" />
+                    <NavLink to="/dashboard" className="flex items-center gap-3 shrink-0">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--primary)] shadow-lg shadow-[var(--primary)]/20">
+                            <Cpu className="h-4.5 w-4.5 text-white" />
                         </div>
-                        <span className="text-[10px] font-bold tracking-[0.3em] text-[var(--foreground)] hidden sm:inline uppercase font-['Syncopate']">
+                        <span className="text-[11px] font-bold tracking-[0.3em] text-[var(--foreground)] hidden sm:inline uppercase font-['Syncopate']">
                             Drift Monitor
                         </span>
                     </NavLink>
@@ -82,12 +82,12 @@ export function Layout() {
                             >
                                 {({ isActive }) => (
                                     <div className={cn(
-                                        'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors duration-200',
+                                        'flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200',
                                         isActive
-                                            ? 'bg-[var(--primary)]/15 text-[var(--primary)]'
+                                            ? 'bg-[var(--primary)]/15 text-[var(--primary)] shadow-sm'
                                             : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--secondary)]'
                                     )}>
-                                        <Icon className="h-3.5 w-3.5" />
+                                        <Icon className="h-4.5 w-4.5" />
                                         <span className="transition-colors duration-200">{label}</span>
                                     </div>
                                 )}
@@ -98,8 +98,8 @@ export function Layout() {
                     <div className="flex items-center gap-3">
                         {/* Status pill */}
                         <div className="hidden sm:flex items-center gap-2">
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--secondary)]/60 border border-[var(--border)] px-3 py-1.5 text-xs text-[var(--muted-foreground)]">
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            <span className="inline-flex items-center gap-2 rounded-full bg-[var(--secondary)]/60 border border-[var(--border)] px-4 py-2 text-sm text-[var(--muted-foreground)]">
+                                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                                 v1.0.0
                             </span>
                         </div>
