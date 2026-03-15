@@ -6,19 +6,26 @@ interface StatusBadgeProps {
 }
 
 const statusConfig = {
-    healthy: { label: 'Healthy', bg: 'bg-emerald-500/15', text: 'text-emerald-400', dot: 'bg-emerald-400' },
-    stable: { label: 'Stable', bg: 'bg-emerald-500/15', text: 'text-emerald-400', dot: 'bg-emerald-400' },
-    unhealthy: { label: 'Unhealthy', bg: 'bg-red-500/15', text: 'text-red-400', dot: 'bg-red-400' },
-    drift: { label: 'Drift', bg: 'bg-red-500/15', text: 'text-red-400', dot: 'bg-red-400' },
-    warning: { label: 'Warning', bg: 'bg-amber-500/15', text: 'text-amber-400', dot: 'bg-amber-400' },
-    critical: { label: 'Critical', bg: 'bg-red-500/15', text: 'text-red-400', dot: 'bg-red-400' },
+    healthy: { label: 'Healthy', color: 'var(--success)' },
+    stable: { label: 'Stable', color: 'var(--success)' },
+    unhealthy: { label: 'Unhealthy', color: 'var(--critical)' },
+    drift: { label: 'Drift', color: 'var(--critical)' },
+    warning: { label: 'Warning', color: 'var(--warning)' },
+    critical: { label: 'Critical', color: 'var(--critical)' },
 }
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
     const config = statusConfig[status]
     return (
-        <span className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium', config.bg, config.text, className)}>
-            <span className={cn('h-1.5 w-1.5 rounded-full', config.dot)} />
+        <span 
+            className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold border transition-colors', className)}
+            style={{ 
+                backgroundColor: `color-mix(in srgb, ${config.color} 10%, transparent)`,
+                color: config.color,
+                borderColor: `color-mix(in srgb, ${config.color} 20%, transparent)`
+            }}
+        >
+            <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: config.color }} />
             {config.label}
         </span>
     )

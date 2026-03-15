@@ -34,7 +34,7 @@ export function GlowingCard({
         inactiveZone={inactiveZone}
         borderWidth={borderWidth}
       />
-      <div className="relative h-full overflow-hidden rounded-xl border-[0.75px] bg-background p-6 shadow-sm dark:shadow-[0px_0px_27px_0px_rgba(45,45,45,0.3)]">
+      <div className="relative h-full overflow-hidden rounded-xl border-[0.75px] bg-[var(--card)]/40 p-6 shadow-sm glassmorphism dark:shadow-[0px_0px_27px_0px_rgba(45,45,45,0.3)]">
         {children}
       </div>
     </div>

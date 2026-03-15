@@ -37,7 +37,7 @@ export function DriftGauge({ score, label }: DriftGaugeProps) {
                             <RadialBar
                                 dataKey="value"
                                 cornerRadius={8}
-                                background={{ fill: 'rgba(255,255,255,0.05)' }}
+                                background={{ fill: 'var(--secondary)', opacity: 0.5 }}
                                 isAnimationActive={true}
                                 animationDuration={1200}
                                 animationEasing="ease-out"

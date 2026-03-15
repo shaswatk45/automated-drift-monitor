@@ -14,10 +14,9 @@ export function MetricTile({ title, value, subtitle, icon: Icon, accentColor = '
     return (
         <div
             className={cn(
-                'rounded-xl border border-[var(--border)]/50 bg-[var(--card)]/40 backdrop-blur-md p-5 transition-all duration-300 hover:shadow-2xl hover:bg-[var(--card)]/60 group',
+                'glassmorphism rounded-xl p-5 transition-all duration-300 hover:shadow-xl hover:bg-[var(--card)] group',
                 className
             )}
-            style={{ boxShadow: `0 10px 30px -10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)` }}
         >
             <div className="flex items-start justify-between mb-3">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--muted-foreground)]">

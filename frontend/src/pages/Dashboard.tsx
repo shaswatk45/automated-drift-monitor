@@ -99,13 +99,13 @@ export default function Dashboard() {
                                 waitTime={2500}
                                 deleteSpeed={40}
                                 cursorChar="_"
-                                className="bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400"
+                                className="bg-clip-text text-transparent bg-gradient-to-b from-[var(--foreground)] to-[var(--muted-foreground)]"
                             />
                         </h1>
-                        <p className="mt-4 text-neutral-400 max-w-lg text-sm md:text-base">
+                        <p className="mt-4 text-[var(--muted-foreground)] max-w-lg text-sm md:text-base">
                             Real-time monitoring of your ML model's health, data drift, and prediction quality.
                             {model && (
-                                <span className="block mt-2 text-neutral-500">
+                                <span className="block mt-2 text-[var(--muted-foreground)]/80">
                                     Model v{model.model_version} • Accuracy: {(model.metrics.accuracy * 100).toFixed(1)}%
                                 </span>
                             )}
@@ -116,7 +116,7 @@ export default function Dashboard() {
                     <div className="flex-1 relative hidden lg:block">
                         <SplineScene
                             scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
-                            className="w-full h-full"
+                            className="w-full h-full opacity-80"
                         />
                     </div>
                 </div>
@@ -126,10 +126,10 @@ export default function Dashboard() {
             <ContainerScroll
                 titleComponent={
                     <div className="flex flex-col items-center gap-4 mb-20">
-                        <span className="text-sm font-semibold tracking-[0.4em] uppercase text-purple-500/80">
+                        <span className="text-sm font-semibold tracking-[0.4em] uppercase text-[var(--primary)]/80">
                             Deep Insights
                         </span>
-                        <h2 className="text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-neutral-500">
+                        <h2 className="text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-[var(--foreground)] to-[var(--muted-foreground)]">
                             Model Health Telemetry
                         </h2>
                     </div>

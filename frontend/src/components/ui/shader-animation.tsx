@@ -133,7 +133,7 @@ export function ShaderAnimation({ className }: ShaderAnimationProps) {
         <div
             ref={containerRef}
             className={cn("w-full h-full", className)}
-            style={{ background: "#000", overflow: "hidden", willChange: "contents" }}
+            style={{ background: "var(--background)", overflow: "hidden", willChange: "contents" }}
         />
     )
 }
