@@ -1,6 +1,6 @@
 "use client";
 import React, { useRef } from "react";
-import { useScroll, useTransform, motion, MotionValue } from "framer-motion";
+import { useScroll, useTransform, motion, MotionValue, useSpring } from "framer-motion";
 
 export const ContainerScroll = ({
   titleComponent,
@@ -13,6 +13,12 @@ export const ContainerScroll = ({
   const { scrollYProgress } = useScroll({
     target: containerRef,
   });
+
+  const smoothScrollYProgress = React.useMemo(() => scrollYProgress, [scrollYProgress]);
+  // Use a spring for smoother animation values
+  const springConfig = { stiffness: 100, damping: 30, restDelta: 0.001 };
+  const smoothY = useSpring(scrollYProgress, springConfig);
+
   const [isMobile, setIsMobile] = React.useState(false);
 
   React.useEffect(() => {
@@ -30,9 +36,9 @@ export const ContainerScroll = ({
     return isMobile ? [0.7, 0.9] : [1.05, 1];
   };
 
-  const rotate = useTransform(scrollYProgress, [0, 1], [20, 0]);
-  const scale = useTransform(scrollYProgress, [0, 1], scaleDimensions());
-  const translate = useTransform(scrollYProgress, [0, 1], [0, -100]);
+  const rotate = useTransform(smoothY, [0, 1], [20, 0]);
+  const scale = useTransform(smoothY, [0, 1], scaleDimensions());
+  const translate = useTransform(smoothY, [0, 1], [0, -100]);
 
   return (
     <div
@@ -59,6 +65,7 @@ export const Header = ({ translate, titleComponent }: any) => {
     <motion.div
       style={{
         translateY: translate,
+        willChange: "transform",
       }}
       className="div max-w-[98vw] mx-auto text-center"
     >
@@ -82,6 +89,7 @@ export const Card = ({
       style={{
         rotateX: rotate,
         scale,
+        willChange: "transform",
       }}
       className="max-w-[98vw] -mt-12 mx-auto w-full"
     >

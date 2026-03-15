@@ -18,10 +18,21 @@ export function ShaderAnimation({ className }: ShaderAnimationProps) {
         animationId: number
     } | null>(null)
 
+    const isVisible = useRef(true)
+
     useEffect(() => {
         if (!containerRef.current) return
 
         const container = containerRef.current
+
+        // Intersection Observer to stop animation when not visible
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                isVisible.current = entry.isIntersecting
+            },
+            { threshold: 0 }
+        )
+        observer.observe(container)
 
         const vertexShader = `
       void main() {
@@ -91,8 +102,10 @@ export function ShaderAnimation({ className }: ShaderAnimationProps) {
 
         const animate = () => {
             const animationId = requestAnimationFrame(animate)
-            uniforms.time.value += 0.05
-            renderer.render(scene, camera)
+            if (isVisible.current) {
+                uniforms.time.value += 0.05
+                renderer.render(scene, camera)
+            }
             if (sceneRef.current) {
                 sceneRef.current.animationId = animationId
             }
@@ -102,6 +115,7 @@ export function ShaderAnimation({ className }: ShaderAnimationProps) {
         animate()
 
         return () => {
+            observer.disconnect()
             window.removeEventListener("resize", onResize)
             if (sceneRef.current) {
                 cancelAnimationFrame(sceneRef.current.animationId)
@@ -119,7 +133,7 @@ export function ShaderAnimation({ className }: ShaderAnimationProps) {
         <div
             ref={containerRef}
             className={cn("w-full h-full", className)}
-            style={{ background: "#000", overflow: "hidden" }}
+            style={{ background: "#000", overflow: "hidden", willChange: "contents" }}
         />
     )
 }
