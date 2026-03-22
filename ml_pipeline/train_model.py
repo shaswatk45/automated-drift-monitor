@@ -171,7 +171,7 @@ def main():
         baseline_stats, list(X.columns), CONFIG
     )
 
-    log.info("Training complete ✓")
+    log.info("Training complete")
 
 
 if __name__ == "__main__":
