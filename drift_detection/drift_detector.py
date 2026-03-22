@@ -34,6 +34,26 @@ from datetime import datetime
 import joblib
 import numpy as np
 import pandas as pd
+from scipy.stats import ks_2samp
+
+def calculate_psi(expected, actual, buckets=10):
+    """Calculate the PSI (population stability index) for numeric drift."""
+    if len(expected) == 0 or len(actual) == 0:
+        return 0.0
+    
+    breakpoints = np.linspace(0, 100, buckets + 1)
+    bins = np.percentile(expected, breakpoints)
+    bins[0] = -np.inf
+    bins[-1] = np.inf
+    
+    expected_percents = np.histogram(expected, bins=bins)[0] / len(expected)
+    actual_percents = np.histogram(actual, bins=bins)[0] / len(actual)
+    
+    expected_percents = np.where(expected_percents == 0, 0.001, expected_percents)
+    actual_percents = np.where(actual_percents == 0, 0.001, actual_percents)
+    
+    psi_value = np.sum((actual_percents - expected_percents) * np.log(actual_percents / expected_percents))
+    return float(psi_value)
 
 log = logging.getLogger(__name__)
 
@@ -108,6 +128,16 @@ class DriftDetector:
         self.baseline_category_dist = self._compute_baseline_category_dist(
             raw_data_path, drop_columns, target_column
         )
+
+        # ---- Load raw numeric data for KS-Test and PSI calculation ----
+        self.raw_baseline_df = pd.DataFrame()
+        if os.path.exists(raw_data_path):
+            df = pd.read_csv(raw_data_path)
+            # Impute basic missing values for tests
+            for col in self.numeric_features:
+                if col in df.columns:
+                    df[col] = df[col].fillna(df[col].median())
+            self.raw_baseline_df = df
 
         self.drop_columns = drop_columns
         self.target_column = target_column
@@ -230,7 +260,7 @@ class DriftDetector:
 
     # ── Numeric drift check ───────────────────────────────────────────────────
 
-    def _check_numeric_drift(self, feature: str, baseline: dict, production: dict) -> dict:
+    def _check_numeric_drift(self, feature: str, baseline: dict, production: dict, prod_series: pd.Series) -> dict:
         """
         Check a NUMERIC feature for drift using two methods:
           1. Mean shift -- has the average moved more than N standard deviations?
@@ -277,6 +307,24 @@ class DriftDetector:
                 f"(baseline_max={baseline['max']:.4f}, "
                 f"production_max={production['max']:.4f})"
             )
+
+        # -- Check 3: Statistical Tests (KS-Test and PSI) --
+        base_series = self.raw_baseline_df.get(feature)
+        if base_series is not None and not base_series.empty and not prod_series.empty:
+            # KS Test
+            stat, p_value = ks_2samp(base_series, prod_series)
+            if p_value < 0.05:
+                reasons.append(f"[KS-Test] Failed. p-value={p_value:.4f} (<0.05) indicates mathematical distribution shift.")
+            
+            # PSI
+            try:
+                psi_val = calculate_psi(base_series.values, prod_series.values)
+                if psi_val > 0.2:
+                    reasons.append(f"[PSI] Failed. Score={psi_val:.4f} (>0.2) indicates significant population shift.")
+                elif psi_val > 0.1:
+                    reasons.append(f"[PSI] Warning. Score={psi_val:.4f} (>0.1) indicates moderate population shift.")
+            except Exception as e:
+                log.error(f"Failed to calculate PSI for {feature}: {e}")
 
         return {
             "feature_type":    "numeric",
@@ -456,7 +504,7 @@ class DriftDetector:
                     log.warning(f"Skipping numeric feature '{feature}' -- not in both datasets.")
                     continue
                 result = self._check_numeric_drift(
-                    feature, self.baseline_stats[feature], prod_stats[feature]
+                    feature, self.baseline_stats[feature], prod_stats[feature], processed_df[feature]
                 )
             elif feature in self.categorical_features:
                 # --- Categorical drift check ---

@@ -4,6 +4,7 @@ import { predict, type PredictionInput, type PredictionResult } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { LiquidButton } from '@/components/ui/liquid-glass-button'
 import { CheckCircle, XCircle, FlaskConical } from 'lucide-react'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
 const defaultInput: PredictionInput = {
     Gender: 'Male',
@@ -170,6 +171,41 @@ export default function PredictionTester() {
                                             />
                                         </div>
                                     </div>
+
+                                    {/* SHAP Reasoning */}
+                                    {result.reasoning && result.reasoning.length > 0 && (
+                                        <div className="w-full mt-6 pt-6 border-t border-[var(--border)] text-left">
+                                            <p className="text-sm font-medium mb-4">Top Influencing Factors</p>
+                                            <div className="h-48 w-full">
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <BarChart data={result.reasoning.slice(0, 5)} layout="vertical" margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                                                        <XAxis type="number" hide />
+                                                        <YAxis dataKey="feature" type="category" width={100} tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }} />
+                                                        <Tooltip 
+                                                            cursor={{ fill: 'transparent' }} 
+                                                            content={({ active, payload }) => {
+                                                                if (active && payload && payload.length) {
+                                                                    const data = payload[0].payload;
+                                                                    return (
+                                                                        <div className="rounded-lg border border-[var(--border)] bg-[var(--background)] p-2 shadow-lg text-xs">
+                                                                            <p className="font-medium text-[var(--foreground)]">{data.feature}: {data.value}</p>
+                                                                            <p className="text-[var(--muted-foreground)]">Impact: {data.importance > 0 ? '+' : ''}{data.importance.toFixed(3)}</p>
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                                return null;
+                                                            }}
+                                                        />
+                                                        <Bar dataKey="importance" radius={[0, 4, 4, 0]}>
+                                                            {result.reasoning.slice(0, 5).map((entry, index) => (
+                                                                <Cell key={`cell-${index}`} fill={entry.importance > 0 ? "var(--success)" : "var(--critical)"} />
+                                                            ))}
+                                                        </Bar>
+                                                    </BarChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </CardContent>

@@ -19,6 +19,7 @@ import os
 import joblib
 import numpy as np
 import pandas as pd
+import shap
 
 log = logging.getLogger(__name__)
 
@@ -61,6 +62,10 @@ class LoanPredictor:
         # The target column "Loan_Status" was also label-encoded during training.
         # We need its encoder to convert numeric predictions back to text.
         self.target_encoder = self.encoders.get("Loan_Status", None)
+        
+        # Initialize SHAP explainer for global/local explainability
+        self.explainer = shap.TreeExplainer(self.model)
+        log.info("SHAP TreeExplainer initialized")
 
     def preprocess_input(self, features: dict) -> pd.DataFrame:
         """
@@ -145,10 +150,33 @@ class LoanPredictor:
         # The probability of the positive class (index 1 = Approved)
         approval_probability = float(probabilities[1])
 
+        # Calculate SHAP values for explainability
+        shap_vals = self.explainer.shap_values(input_df)
+        if isinstance(shap_vals, list):
+            # RandomForest returns a list of arrays (one for each class)
+            # We care about the positive class (index 1)
+            feature_contributions = shap_vals[1][0]
+        else:
+            # Some wrappers or newer SHAP versions might just return one array
+            feature_contributions = shap_vals[0]
+
+        # Build a list of feature importance dictionaries
+        reasoning = []
+        for feat_name, importance in zip(self.feature_names, feature_contributions):
+            reasoning.append({
+                "feature": feat_name,
+                "importance": float(importance),
+                "value": str(input_df[feat_name].iloc[0])
+            })
+            
+        # Sort by absolute importance (highest impact first)
+        reasoning.sort(key=lambda x: abs(x["importance"]), reverse=True)
+
         result = {
             "prediction": prediction_label,
             "probability": round(approval_probability, 4),
             "features_used": self.feature_names,
+            "reasoning": reasoning,
         }
 
         log.info(f"Prediction: {result['prediction']} (prob={result['probability']:.4f})")

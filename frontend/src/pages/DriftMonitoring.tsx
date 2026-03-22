@@ -131,13 +131,13 @@ export default function DriftMonitoring() {
                                 <p className="text-sm text-[var(--muted-foreground)] mb-4">
                                     Drag & drop a production CSV file here, or click to browse
                                 </p>
-                                <label>
-                                    <MetalButton variant="primary" disabled={uploading} onClick={() => { }}>
+                                <div>
+                                    <input id="drift-file-upload" type="file" accept=".csv" onChange={handleInputChange} className="hidden" />
+                                    <MetalButton variant="primary" disabled={uploading} onClick={() => document.getElementById('drift-file-upload')?.click() }>
                                         <FileUp className="h-4 w-4 mr-2" />
                                         {uploading ? 'Running...' : 'Upload & Run'}
                                     </MetalButton>
-                                    <input type="file" accept=".csv" onChange={handleInputChange} className="hidden" />
-                                </label>
+                                </div>
                             </div>
                             {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
                         </CardContent>
@@ -215,18 +215,19 @@ export default function DriftMonitoring() {
                             </ResponsiveContainer>
                         </ChartContainer>
 
-                        {/* Categorical drift for the first categorical feature */}
-                        {categoricalData.length > 0 && (
+                        {/* Categorical feature distributions */}
+                        {categoricalData.map((data, index) => (
                             <ChartContainer
-                                title={`Categorical: ${categoricalData[0].name}`}
+                                key={data.name}
+                                title={`Categorical: ${data.name}`}
                                 subtitle="Distribution comparison"
                             >
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart
-                                        data={categoricalData[0].categories.map((cat) => ({
-                                            name: cat,
-                                            Baseline: Number(((categoricalData[0].feature.baseline_distribution?.[cat] || 0) * 100).toFixed(1)),
-                                            Production: Number(((categoricalData[0].feature.production_distribution?.[cat] || 0) * 100).toFixed(1)),
+                                        data={data.categories.map((cat) => ({
+                                            name: cat.replace('_', ' '),
+                                            Baseline: Number(((data.feature.baseline_distribution?.[cat] || 0) * 100).toFixed(1)),
+                                            Production: Number(((data.feature.production_distribution?.[cat] || 0) * 100).toFixed(1)),
                                         }))}
                                         margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
                                     >
@@ -240,7 +241,7 @@ export default function DriftMonitoring() {
                                     </BarChart>
                                 </ResponsiveContainer>
                             </ChartContainer>
-                        )}
+                        ))}
                     </div>
                 )}
 
