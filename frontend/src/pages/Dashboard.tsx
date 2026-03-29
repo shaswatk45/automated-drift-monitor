@@ -22,6 +22,19 @@ import { Layers, Clock } from 'lucide-react'
 import {
     BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend,
 } from 'recharts'
+import { motion } from 'framer-motion'
+
+const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: { staggerChildren: 0.1 }
+    }
+}
+const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+}
 
 export default function Dashboard() {
     const [health, setHealth] = useState<{ status: string; timestamp: string } | null>(null)
@@ -135,9 +148,15 @@ export default function Dashboard() {
                     </div>
                 }
             >
-                <div className="flex flex-col gap-12 p-4">
+                <motion.div 
+                    variants={containerVariants}
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true, margin: "-50px" }}
+                    className="flex flex-col gap-12 p-4"
+                >
                     {/* Telemetry Metrics */}
-                    <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6">
+                    <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6">
                         <DriftGauge score={driftScore} />
                         <GlowingEffectDemo
                             healthStatus={health?.status === 'healthy' ? 'healthy' : 'offline'}
@@ -164,10 +183,10 @@ export default function Dashboard() {
                             }
                             lastCheckString={latestReport ? new Date(latestReport.timestamp).toLocaleString() : ''}
                         />
-                    </div>
+                    </motion.div>
 
                     {/* Charts Row */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <ChartContainer title="Baseline vs Production" subtitle="Numeric feature means">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={numericFeatures} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -198,12 +217,18 @@ export default function Dashboard() {
                                 <DriftScoreGauge score={driftScore} />
                             </CardContent>
                         </GlowingCard>
-                    </div>
-                </div>
+                    </motion.div>
+                </motion.div>
             </ContainerScroll>
 
             {/* ── Top Drifting Features Table ── */}
-            <div className="px-6">
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+                className="px-6"
+            >
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-base font-semibold">Top Drifting Features</CardTitle>
@@ -247,7 +272,7 @@ export default function Dashboard() {
                         )}
                     </CardContent>
                 </Card>
-            </div>
+            </motion.div>
         </div>
     )
 }
