@@ -56,12 +56,17 @@ export default function LandingPage() {
             }
         }}
       >
-        {/* Background Typography (Flowing in section 2) */}
-        <div className="w-full flex items-center justify-center opacity-10 py-20 translate-y-20">
+        {/* Background Typography (Animated) */}
+        <motion.div 
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 0.1, y: 20 }}
+          transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
+          className="w-full flex items-center justify-center py-20 translate-y-20"
+        >
             <h1 className="text-[15vw] md:text-[25vw] font-black text-white tracking-[-0.05em] uppercase leading-none">
             MONITOR
             </h1>
-        </div>
+        </motion.div>
       </AnimatedShaderHero>
 
       {/* Pulse Beams Layer */}
