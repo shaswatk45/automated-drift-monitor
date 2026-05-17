@@ -1,0 +1,152 @@
+{
+  "timestamp": "2026-03-30T18:16:07.783185",
+  "dataset_size": 100,
+  "overall_drift": false,
+  "drifted_features": [],
+  "feature_results": {
+    "Gender": {
+      "feature_type": "categorical",
+      "baseline_distribution": {
+        "Male": 0.796417,
+        "Female": 0.18241,
+        "Unknown": 0.021173
+      },
+      "production_distribution": {
+        "Male": 0.84,
+        "Female": 0.15,
+        "Unknown": 0.01
+      },
+      "baseline_mean": 0.7964,
+      "production_mean": 0.84,
+      "drift_detected": false,
+      "reasons": []
+    },
+    "Married": {
+      "feature_type": "categorical",
+      "baseline_distribution": {
+        "Yes": 0.648208,
+        "No": 0.346906,
+        "Unknown": 0.004886
+      },
+      "production_distribution": {
+        "Yes": 0.63,
+        "No": 0.36,
+        "Unknown": 0.01
+      },
+      "baseline_mean": 0.6482,
+      "production_mean": 0.63,
+      "drift_detected": false,
+      "reasons": []
+    },
+    "Dependents": {
+      "feature_type": "categorical",
+      "baseline_distribution": {
+        "0": 0.561889,
+        "1": 0.166124,
+        "2": 0.164495,
+        "3+": 0.083062,
+        "Unknown": 0.02443
+      },
+      "production_distribution": {
+        "0": 0.51,
+        "2": 0.21,
+        "1": 0.17,
+        "3+": 0.09,
+        "Unknown": 0.02
+      },
+      "baseline_mean": 0.5619,
+      "production_mean": 0.51,
+      "drift_detected": false,
+      "reasons": []
+    },
+    "Education": {
+      "feature_type": "categorical",
+      "baseline_distribution": {
+        "Graduate": 0.781759,
+        "Not Graduate": 0.218241
+      },
+      "production_distribution": {
+        "Graduate": 0.76,
+        "Not Graduate": 0.24
+      },
+      "baseline_mean": 0.7818,
+      "production_mean": 0.76,
+      "drift_detected": false,
+      "reasons": []
+    },
+    "Self_Employed": {
+      "feature_type": "categorical",
+      "baseline_distribution": {
+        "No": 0.814332,
+        "Yes": 0.13355,
+        "Unknown": 0.052117
+      },
+      "production_distribution": {
+        "No": 0.81,
+        "Yes": 0.16,
+        "Unknown": 0.03
+      },
+      "baseline_mean": 0.8143,
+      "production_mean": 0.81,
+      "drift_detected": false,
+      "reasons": []
+    },
+    "ApplicantIncome": {
+      "feature_type": "numeric",
+      "baseline_mean": 5529.998,
+      "production_mean": 5583.27,
+      "drift_detected": false,
+      "reasons": []
+    },
+    "CoapplicantIncome": {
+      "feature_type": "numeric",
+      "baseline_mean": 1569.5373,
+      "production_mean": 1564.32,
+      "drift_detected": false,
+      "reasons": []
+    },
+    "LoanAmount": {
+      "feature_type": "numeric",
+      "baseline_mean": 146.5234,
+      "production_mean": 155.06,
+      "drift_detected": false,
+      "reasons": []
+    },
+    "Loan_Amount_Term": {
+      "feature_type": "numeric",
+      "baseline_mean": 341.7434,
+      "production_mean": 336.24,
+      "drift_detected": false,
+      "reasons": []
+    },
+    "Credit_History": {
+      "feature_type": "numeric",
+      "baseline_mean": 0.8635,
+      "production_mean": 0.88,
+      "drift_detected": false,
+      "reasons": []
+    },
+    "Property_Area": {
+      "feature_type": "categorical",
+      "baseline_distribution": {
+        "Semiurban": 0.379479,
+        "Urban": 0.32899,
+        "Rural": 0.291531
+      },
+      "production_distribution": {
+        "Urban": 0.36,
+        "Semiurban": 0.36,
+        "Rural": 0.28
+      },
+      "baseline_mean": 0.3795,
+      "production_mean": 0.36,
+      "drift_detected": false,
+      "reasons": []
+    }
+  },
+  "summary": {
+    "total_features": 11,
+    "drifted_count": 0,
+    "stable_count": 11
+  }
+}
