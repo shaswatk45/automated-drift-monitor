@@ -1,0 +1,50 @@
+# docker-compose.yml
+# ──────────────────────────────────────────────────────────────────────────────
+# Full-stack deployment for the Automated Drift Monitor.
+#
+# Services:
+#   backend  — FastAPI app (Python) on port 8000
+#   frontend — React/Vite app (Node) on port 5173 (dev) / 80 (prod via nginx)
+#
+# Usage (development):
+#   docker-compose up --build
+#
+# Usage (production):
+#   docker-compose -f docker-compose.yml up -d
+# ──────────────────────────────────────────────────────────────────────────────
+
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: drift-monitor-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist drift reports and uploaded production data outside the container
+      - ./logs:/app/logs
+      - ./data/production:/app/data/production
+    environment:
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    container_name: drift-monitor-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped

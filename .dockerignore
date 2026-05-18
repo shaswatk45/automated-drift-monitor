@@ -1,0 +1,59 @@
+# .dockerignore
+# ──────────────────────────────────────────────────────────────────────────────
+# Files excluded from the Docker build context.
+# Keeping the context small speeds up builds and avoids accidentally copying
+# secrets or large artifacts into the image.
+# ──────────────────────────────────────────────────────────────────────────────
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+dist/
+build/
+*.so
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+node_modules/
+
+# Test and coverage
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+*.cover
+
+# Logs (runtime — mounted as a volume)
+logs/
+
+# Git
+.git/
+.gitignore
+
+# IDE / OS
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+
+# Environment files (secrets should be passed at runtime)
+.env
+.env.*
+!.env.example
+
+# Notebooks
+notebooks/
+
+# Temporary data
+tmp/
+data/production/
