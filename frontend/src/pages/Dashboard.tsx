@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import {
     getHealth, getModelInfo, getLatestReport,
-    computeDriftScore, getDriftStatus,
+    computeDriftScore, getDriftStatus, fmtNum,
     type ModelInfo, type DriftReport,
 } from '@/lib/api'
-import { SplineScene } from '@/components/ui/splite'
 import { Spotlight } from '@/components/ui/spotlight'
 import { Typewriter } from '@/components/ui/typewriter'
-import { ShaderAnimation } from '@/components/ui/shader-animation'
+import { AuroraBackground } from '@/components/ui/aurora-background'
+import { NeuralSphere } from '@/components/landing/NeuralSphere'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer } from '@/components/ChartContainer'
 import { StatusBadge } from '@/components/StatusBadge'
@@ -60,8 +60,8 @@ export default function Dashboard() {
             .filter(([, v]) => v.feature_type === 'numeric')
             .map(([name, v]) => ({
                 name: name.replace(/_/g, ' '),
-                Baseline: Number(v.baseline_mean.toFixed(1)),
-                Production: Number(v.production_mean.toFixed(1)),
+                Baseline: Number((v.baseline_mean ?? 0).toFixed(1)),
+                Production: Number((v.production_mean ?? 0).toFixed(1)),
             }))
         : []
 
@@ -83,9 +83,9 @@ export default function Dashboard() {
         <div className="space-y-6 pb-8">
             {/* ── Hero Section with Shader Background ── */}
             <div className="relative w-full min-h-[420px] overflow-hidden rounded-none">
-                {/* Shader Animation Background */}
+                {/* Lightweight animated gradient background (was a WebGL shader) */}
                 <div className="absolute inset-0 z-0">
-                    <ShaderAnimation />
+                    <AuroraBackground />
                 </div>
                 {/* Overlay gradients */}
                 <div className="absolute inset-0 z-[1] bg-gradient-to-t from-[var(--background)] via-transparent to-transparent" />
@@ -125,12 +125,9 @@ export default function Dashboard() {
                         </p>
                     </div>
 
-                    {/* Right: Spline 3D scene */}
-                    <div className="flex-1 relative hidden lg:block">
-                        <SplineScene
-                            scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
-                            className="w-full h-full opacity-80"
-                        />
+                    {/* Right: lightweight SVG neural sphere (was a 4.5MB Spline 3D scene) */}
+                    <div className="flex-1 relative hidden lg:flex items-center justify-center">
+                        <NeuralSphere />
                     </div>
                 </div>
             </div>
@@ -259,8 +256,8 @@ export default function Dashboard() {
                                                         {f.feature_type}
                                                     </span>
                                                 </td>
-                                                <td className="py-3 px-4 text-[var(--muted-foreground)]">{f.baseline_mean.toFixed(4)}</td>
-                                                <td className="py-3 px-4 text-[var(--muted-foreground)]">{f.production_mean.toFixed(4)}</td>
+                                                <td className="py-3 px-4 text-[var(--muted-foreground)]">{fmtNum(f.baseline_mean)}</td>
+                                                <td className="py-3 px-4 text-[var(--muted-foreground)]">{fmtNum(f.production_mean)}</td>
                                                 <td className="py-3 px-4">
                                                     <StatusBadge status="drift" />
                                                 </td>

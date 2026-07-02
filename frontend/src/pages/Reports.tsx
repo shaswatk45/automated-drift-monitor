@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { SmokeBackground } from '@/components/ui/spooky-smoke-animation'
 import {
-    listReports, getReport,
+    listReports, getReport, fmtNum,
     type ReportListItem, type DriftReport,
 } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -148,7 +148,7 @@ export default function Reports() {
                                                     <div>
                                                         <p className="text-sm font-medium">{name}</p>
                                                         <p className="text-xs text-[var(--muted-foreground)]">
-                                                            {f.feature_type} • Baseline: {f.baseline_mean.toFixed(4)} → Prod: {f.production_mean.toFixed(4)}
+                                                            {f.feature_type} • Baseline: {fmtNum(f.baseline_mean)} → Prod: {fmtNum(f.production_mean)}
                                                         </p>
                                                     </div>
                                                     <StatusBadge status={f.drift_detected ? 'drift' : 'stable'} />

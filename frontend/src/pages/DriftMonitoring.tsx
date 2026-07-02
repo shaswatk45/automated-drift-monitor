@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { SmokeBackground } from '@/components/ui/spooky-smoke-animation'
 import {
-    getLatestReport, runDriftCheck, computeDriftScore,
+    getLatestReport, runDriftCheck, computeDriftScore, fmtNum,
     type DriftReport,
 } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -66,8 +66,8 @@ export default function DriftMonitoring() {
             .filter(([, v]) => v.feature_type === 'numeric')
             .map(([name, v]) => ({
                 name: name.replace(/_/g, ' '),
-                Baseline: Number(v.baseline_mean.toFixed(1)),
-                Production: Number(v.production_mean.toFixed(1)),
+                Baseline: Number((v.baseline_mean ?? 0).toFixed(1)),
+                Production: Number((v.production_mean ?? 0).toFixed(1)),
             }))
         : []
 
@@ -184,8 +184,8 @@ export default function DriftMonitoring() {
                                                 <td className="py-3 px-4">
                                                     <span className="rounded-full bg-[var(--secondary)] px-2 py-0.5 text-xs">{f.feature_type}</span>
                                                 </td>
-                                                <td className="py-3 px-4 text-[var(--muted-foreground)]">{f.baseline_mean.toFixed(4)}</td>
-                                                <td className="py-3 px-4 text-[var(--muted-foreground)]">{f.production_mean.toFixed(4)}</td>
+                                                <td className="py-3 px-4 text-[var(--muted-foreground)]">{fmtNum(f.baseline_mean)}</td>
+                                                <td className="py-3 px-4 text-[var(--muted-foreground)]">{fmtNum(f.production_mean)}</td>
                                                 <td className="py-3 px-4">
                                                     <StatusBadge status={f.drift_detected ? 'drift' : 'stable'} />
                                                 </td>

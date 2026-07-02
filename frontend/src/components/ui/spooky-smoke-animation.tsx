@@ -13,7 +13,7 @@ uniform vec3 u_color;
 
 float rnd(vec2 p){p=fract(p*vec2(12.9898,78.233));p+=dot(p,p+34.56);return fract(p.x*p.y);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.-2.*f);return mix(mix(rnd(i),rnd(i+vec2(1,0)),u.x),mix(rnd(i+vec2(0,1)),rnd(i+1.),u.x),u.y);}
-float fbm(vec2 p){float t=.0,a=1.;for(int i=0;i<5;i++){t+=a*noise(p);p*=mat2(1,-1.2,.2,1.2)*2.;a*=.5;}return t;}
+float fbm(vec2 p){float t=.0,a=1.;for(int i=0;i<3;i++){t+=a*noise(p);p*=mat2(1,-1.2,.2,1.2)*2.;a*=.5;}return t;}
 
 void main(){
   vec2 uv=(FC-.5*R)/R.y;
@@ -63,10 +63,13 @@ class Renderer {
     }
 
     updateScale() {
-        const dpr = Math.max(1, window.devicePixelRatio);
+        // Cap the device-pixel-ratio: a full-screen fragment shader at retina
+        // 2x renders 4x the pixels for no perceptible gain on a soft smoke
+        // background. 1.25 keeps it crisp while slashing GPU cost.
+        const dpr = Math.min(1.25, Math.max(1, window.devicePixelRatio));
         const { clientWidth: width, clientHeight: height } = this.canvas.parentElement || this.canvas;
-        this.canvas.width = width * dpr;
-        this.canvas.height = height * dpr;
+        this.canvas.width = Math.floor(width * dpr);
+        this.canvas.height = Math.floor(height * dpr);
         this.gl.viewport(0, 0, this.canvas.width, this.canvas.height);
     }
 
@@ -159,6 +162,10 @@ export const SmokeBackground: React.FC<SmokeBackgroundProps> = ({
     useEffect(() => {
         if (!canvasRef.current) return;
         const canvas = canvasRef.current;
+
+        // Respect reduced-motion: render a single static frame, no loop.
+        const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
         const renderer = new Renderer(canvas, fragmentShaderSource);
         rendererRef.current = renderer;
 
@@ -166,15 +173,41 @@ export const SmokeBackground: React.FC<SmokeBackgroundProps> = ({
         handleResize();
         window.addEventListener('resize', handleResize);
 
+        // Pause when the canvas is scrolled off-screen (IntersectionObserver)
+        // or the tab is hidden (visibilitychange). A drifting smoke background
+        // has no reason to burn GPU cycles the user can't see.
+        let onScreen = true;
+        const io = new IntersectionObserver(
+            ([entry]) => { onScreen = entry.isIntersecting; },
+            { threshold: 0 }
+        );
+        io.observe(canvas);
+
+        if (reducedMotion) {
+            renderer.render(1000);
+            return () => {
+                window.removeEventListener('resize', handleResize);
+                io.disconnect();
+                renderer.reset();
+            };
+        }
+
+        // Throttle to ~30fps — smoke is slow-moving, 60fps is wasted work.
+        const frameInterval = 1000 / 30;
         let animationFrameId: number;
+        let last = 0;
         const loop = (now: number) => {
-            renderer.render(now);
             animationFrameId = requestAnimationFrame(loop);
+            if (!onScreen || document.hidden) return;
+            if (now - last < frameInterval) return;
+            last = now;
+            renderer.render(now);
         };
-        loop(0);
+        animationFrameId = requestAnimationFrame(loop);
 
         return () => {
             window.removeEventListener('resize', handleResize);
+            io.disconnect();
             cancelAnimationFrame(animationFrameId);
             renderer.reset();
         };
