@@ -42,6 +42,7 @@ export default function Dashboard() {
     const [latestReport, setLatestReport] = useState<DriftReport | null>(null)
     const [history, setHistory] = useState<HistoryPoint[]>([])
     const [loading, setLoading] = useState(true)
+    const [backendOffline, setBackendOffline] = useState(false)
 
     useEffect(() => {
         Promise.allSettled([getHealth(), getModelInfo(), getLatestReport(), getHistory(30)])
@@ -50,6 +51,8 @@ export default function Dashboard() {
                 if (m.status === 'fulfilled') setModel(m.value)
                 if (r.status === 'fulfilled') setLatestReport(r.value)
                 if (hist.status === 'fulfilled') setHistory(hist.value.points)
+                // If even the health check failed, the API is unreachable.
+                setBackendOffline(h.status === 'rejected')
             })
             .finally(() => setLoading(false))
     }, [])
@@ -89,6 +92,15 @@ export default function Dashboard() {
 
     return (
         <div className="space-y-6 pb-8">
+            {backendOffline && (
+                <div className="mx-6 mt-2 flex items-center gap-3 rounded-lg border border-[var(--critical)]/30 bg-[var(--critical)]/10 px-4 py-3 text-sm">
+                    <span className="h-2 w-2 shrink-0 rounded-full bg-[var(--critical)]" />
+                    <span className="text-[var(--foreground)]">
+                        Cannot reach the backend API. Start the server
+                        (<code className="text-xs">uvicorn backend.main:app</code>) — showing empty data until it responds.
+                    </span>
+                </div>
+            )}
             {/* ── Hero Section with Shader Background ── */}
             <div className="relative w-full min-h-[420px] overflow-hidden rounded-none">
                 {/* Lightweight animated gradient background (was a WebGL shader) */}

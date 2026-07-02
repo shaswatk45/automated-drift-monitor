@@ -191,7 +191,18 @@ Full interactive documentation available at **[http://localhost:8000/docs](http:
 | `POST` | `/predict` | Score a loan application + SHAP explanation |
 | `POST` | `/drift/run` | Upload production CSV, run KS-Test + PSI drift analysis |
 | `GET` | `/drift/reports` | List all past drift reports |
+| `GET` | `/drift/reports/{name}` | Fetch a specific report |
+| `GET` | `/drift/reports/{name}/download` | Download a report as a JSON attachment |
+| `DELETE` | `/drift/reports/{name}` | Delete a specific report |
 | `GET` | `/drift/latest` | Get the most recent drift report |
+| `GET` | `/drift/history` | Time series of drift scores for trend charts |
+
+Each drift report now includes a severity-weighted `drift_score` (0–1) and,
+per feature, a `severity` (`stable`/`warning`/`critical`) plus structured
+`metrics` (PSI, KS statistic/p-value, mean-shift σ, or categorical
+Jensen-Shannon divergence) — so the UI charts the numbers directly rather than
+parsing them out of text. CORS origins are configurable via the
+`CORS_ALLOW_ORIGINS` env var.
 
 ### Example: Predict Loan Approval
 ```bash
