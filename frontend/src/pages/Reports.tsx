@@ -1,28 +1,52 @@
 import { useEffect, useState } from 'react'
 import { SmokeBackground } from '@/components/ui/spooky-smoke-animation'
 import {
-    listReports, getReport, fmtNum,
+    listReports, getReport, deleteReport, reportDownloadUrl, fmtNum,
     type ReportListItem, type DriftReport,
 } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatusBadge } from '@/components/StatusBadge'
-import { FileText, X, ChevronRight } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { FileText, X, Trash2, Download } from 'lucide-react'
 
 export default function Reports() {
     const [reports, setReports] = useState<ReportListItem[]>([])
     const [loading, setLoading] = useState(true)
     const [selectedReport, setSelectedReport] = useState<DriftReport | null>(null)
+    const [selectedName, setSelectedName] = useState<string | null>(null)
     const [detailLoading, setDetailLoading] = useState(false)
+    const [deleting, setDeleting] = useState<string | null>(null)
 
-    useEffect(() => {
+    const loadReports = () =>
         listReports()
             .then((data) => setReports(data.reports))
             .catch(() => { })
             .finally(() => setLoading(false))
+
+    useEffect(() => {
+        loadReports()
     }, [])
+
+    const handleDelete = async (filename: string) => {
+        if (!window.confirm(`Delete ${filename}? This cannot be undone.`)) return
+        setDeleting(filename)
+        try {
+            await deleteReport(filename)
+            if (selectedName === filename) {
+                setSelectedReport(null)
+                setSelectedName(null)
+            }
+            await loadReports()
+        } catch {
+            // ignore — the list simply won't change
+        } finally {
+            setDeleting(null)
+        }
+    }
 
     const openReport = async (filename: string) => {
         setDetailLoading(true)
+        setSelectedName(filename)
         try {
             const report = await getReport(filename)
             setSelectedReport(report)
@@ -66,21 +90,44 @@ export default function Reports() {
                             ) : (
                                 <div className="space-y-1">
                                     {reports.map((r) => (
-                                        <button
+                                        <div
                                             key={r.filename}
-                                            onClick={() => openReport(r.filename)}
-                                            className="w-full flex items-center gap-3 rounded-lg px-3 py-3 text-left hover:bg-[var(--secondary)] transition-colors group"
+                                            className={cn(
+                                                'w-full flex items-center gap-3 rounded-lg px-3 py-3 transition-colors group',
+                                                selectedName === r.filename ? 'bg-[var(--secondary)]' : 'hover:bg-[var(--secondary)]'
+                                            )}
                                         >
-                                            <FileText className="h-4 w-4 text-[var(--muted-foreground)] shrink-0" />
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-medium truncate">{r.filename}</p>
-                                                <p className="text-xs text-[var(--muted-foreground)]">
-                                                    {new Date(r.created_at * 1000).toLocaleString()} •{' '}
-                                                    {(r.file_size_bytes / 1024).toFixed(1)} KB
-                                                </p>
-                                            </div>
-                                            <ChevronRight className="h-4 w-4 text-[var(--muted-foreground)] opacity-0 group-hover:opacity-100 transition-opacity" />
-                                        </button>
+                                            <button
+                                                onClick={() => openReport(r.filename)}
+                                                className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                                            >
+                                                <FileText className="h-4 w-4 text-[var(--muted-foreground)] shrink-0" />
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-medium truncate">{r.filename}</p>
+                                                    <p className="text-xs text-[var(--muted-foreground)]">
+                                                        {new Date(r.created_at * 1000).toLocaleString()} •{' '}
+                                                        {(r.file_size_bytes / 1024).toFixed(1)} KB
+                                                    </p>
+                                                </div>
+                                            </button>
+                                            <a
+                                                href={reportDownloadUrl(r.filename)}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                title="Download report"
+                                                className="text-[var(--muted-foreground)] hover:text-[var(--primary)] transition-colors p-1"
+                                            >
+                                                <Download className="h-4 w-4" />
+                                            </a>
+                                            <button
+                                                onClick={() => handleDelete(r.filename)}
+                                                disabled={deleting === r.filename}
+                                                title="Delete report"
+                                                className="text-[var(--muted-foreground)] hover:text-[var(--critical)] transition-colors p-1 disabled:opacity-40"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+                                        </div>
                                     ))}
                                 </div>
                             )}

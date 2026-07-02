@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import {
-    getHealth, getModelInfo, getLatestReport,
+    getHealth, getModelInfo, getLatestReport, getHistory,
     computeDriftScore, getDriftStatus, fmtNum,
-    type ModelInfo, type DriftReport,
+    type ModelInfo, type DriftReport, type HistoryPoint,
 } from '@/lib/api'
 import { Spotlight } from '@/components/ui/spotlight'
 import { Typewriter } from '@/components/ui/typewriter'
@@ -20,7 +20,7 @@ import { GlowingCard } from '@/components/ui/glowing-card'
 import { ContainerScroll } from '@/components/ui/container-scroll-animation'
 import { Layers, Clock } from 'lucide-react'
 import {
-    BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend,
+    BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend,
 } from 'recharts'
 import { motion } from 'framer-motion'
 
@@ -40,17 +40,25 @@ export default function Dashboard() {
     const [health, setHealth] = useState<{ status: string; timestamp: string } | null>(null)
     const [model, setModel] = useState<ModelInfo | null>(null)
     const [latestReport, setLatestReport] = useState<DriftReport | null>(null)
+    const [history, setHistory] = useState<HistoryPoint[]>([])
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        Promise.allSettled([getHealth(), getModelInfo(), getLatestReport()])
-            .then(([h, m, r]) => {
+        Promise.allSettled([getHealth(), getModelInfo(), getLatestReport(), getHistory(30)])
+            .then(([h, m, r, hist]) => {
                 if (h.status === 'fulfilled') setHealth(h.value)
                 if (m.status === 'fulfilled') setModel(m.value)
                 if (r.status === 'fulfilled') setLatestReport(r.value)
+                if (hist.status === 'fulfilled') setHistory(hist.value.points)
             })
             .finally(() => setLoading(false))
     }, [])
+
+    const trendData = history.map((p, i) => ({
+        idx: i + 1,
+        label: p.timestamp ? new Date(p.timestamp).toLocaleDateString() : `#${i + 1}`,
+        score: Number((p.drift_score * 100).toFixed(1)),
+    }))
 
     const driftScore = latestReport ? computeDriftScore(latestReport) : 0
     const driftStatus = getDriftStatus(driftScore)
@@ -208,12 +216,40 @@ export default function Dashboard() {
                         <GlowingCard className="p-0">
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-base font-semibold">Overall Drift Score</CardTitle>
-                                <p className="text-xs text-[var(--muted-foreground)]">Ratio of drifted to total features</p>
+                                <p className="text-xs text-[var(--muted-foreground)]">Severity-weighted across all features</p>
                             </CardHeader>
                             <CardContent className="flex items-center justify-center py-6">
                                 <DriftScoreGauge score={driftScore} />
                             </CardContent>
                         </GlowingCard>
+                    </motion.div>
+
+                    {/* Drift trend over time */}
+                    <motion.div variants={itemVariants}>
+                        <ChartContainer title="Drift Score Trend" subtitle="Drift score (%) across recent checks">
+                            {trendData.length === 0 ? (
+                                <div className="flex h-full items-center justify-center text-sm text-[var(--muted-foreground)]">
+                                    Run a few drift checks to see the trend over time.
+                                </div>
+                            ) : (
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={trendData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                                        <XAxis dataKey="label" tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} />
+                                        <YAxis unit="%" domain={[0, 100]} tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} />
+                                        <Tooltip
+                                            contentStyle={{
+                                                backgroundColor: 'var(--card)',
+                                                border: '1px solid var(--border)',
+                                                borderRadius: '8px',
+                                                color: 'var(--foreground)',
+                                            }}
+                                        />
+                                        <Line type="monotone" dataKey="score" name="Drift %" stroke="var(--chart-2)" strokeWidth={2} dot={{ r: 3 }} />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            )}
+                        </ChartContainer>
                     </motion.div>
                 </motion.div>
             </ContainerScroll>

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { SmokeBackground } from '@/components/ui/spooky-smoke-animation'
 import {
     getLatestReport, runDriftCheck, computeDriftScore, fmtNum,
+    featureSignal, featureSeverity,
     type DriftReport,
 } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -174,6 +175,7 @@ export default function DriftMonitoring() {
                                             <th className="text-left py-3 px-4 text-[var(--muted-foreground)] font-medium">Type</th>
                                             <th className="text-left py-3 px-4 text-[var(--muted-foreground)] font-medium">Baseline Mean</th>
                                             <th className="text-left py-3 px-4 text-[var(--muted-foreground)] font-medium">Prod Mean</th>
+                                            <th className="text-left py-3 px-4 text-[var(--muted-foreground)] font-medium">Signal</th>
                                             <th className="text-left py-3 px-4 text-[var(--muted-foreground)] font-medium">Status</th>
                                         </tr>
                                     </thead>
@@ -186,8 +188,9 @@ export default function DriftMonitoring() {
                                                 </td>
                                                 <td className="py-3 px-4 text-[var(--muted-foreground)]">{fmtNum(f.baseline_mean)}</td>
                                                 <td className="py-3 px-4 text-[var(--muted-foreground)]">{fmtNum(f.production_mean)}</td>
+                                                <td className="py-3 px-4 font-mono text-xs text-[var(--muted-foreground)]">{featureSignal(f)}</td>
                                                 <td className="py-3 px-4">
-                                                    <StatusBadge status={f.drift_detected ? 'drift' : 'stable'} />
+                                                    <StatusBadge status={featureSeverity(f)} />
                                                 </td>
                                             </tr>
                                         ))}
