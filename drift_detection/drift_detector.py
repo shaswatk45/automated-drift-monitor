@@ -40,18 +40,18 @@ def calculate_psi(expected, actual, buckets=10):
     """Calculate the PSI (population stability index) for numeric drift."""
     if len(expected) == 0 or len(actual) == 0:
         return 0.0
-    
+
     breakpoints = np.linspace(0, 100, buckets + 1)
     bins = np.percentile(expected, breakpoints)
     bins[0] = -np.inf
     bins[-1] = np.inf
-    
+
     expected_percents = np.histogram(expected, bins=bins)[0] / len(expected)
     actual_percents = np.histogram(actual, bins=bins)[0] / len(actual)
-    
+
     expected_percents = np.where(expected_percents == 0, 0.001, expected_percents)
     actual_percents = np.where(actual_percents == 0, 0.001, actual_percents)
-    
+
     psi_value = np.sum((actual_percents - expected_percents) * np.log(actual_percents / expected_percents))
     return float(psi_value)
 
@@ -69,7 +69,10 @@ def _js_divergence(dist_a: dict, dist_b: dict, categories) -> float:
     p = p / p.sum()
     q = q / q.sum()
     m = 0.5 * (p + q)
-    kl = lambda x, y: float(np.sum(x * np.log(x / y)))
+
+    def kl(x, y):
+        return float(np.sum(x * np.log(x / y)))
+
     return 0.5 * kl(p, m) + 0.5 * kl(q, m)
 
 

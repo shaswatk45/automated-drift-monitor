@@ -14,10 +14,8 @@
 
 import json
 import logging
-import os
 
 import joblib
-import numpy as np
 import pandas as pd
 import shap
 
@@ -62,7 +60,7 @@ class LoanPredictor:
         # The target column "Loan_Status" was also label-encoded during training.
         # We need its encoder to convert numeric predictions back to text.
         self.target_encoder = self.encoders.get("Loan_Status", None)
-        
+
         # Initialize SHAP explainer for global/local explainability
         self.explainer = shap.TreeExplainer(self.model)
         log.info("SHAP TreeExplainer initialized")
@@ -168,7 +166,7 @@ class LoanPredictor:
                 "importance": float(importance),
                 "value": str(input_df[feat_name].iloc[0])
             })
-            
+
         # Sort by absolute importance (highest impact first)
         reasoning.sort(key=lambda x: abs(x["importance"]), reverse=True)
 

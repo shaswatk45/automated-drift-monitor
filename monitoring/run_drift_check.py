@@ -131,6 +131,7 @@ def main():
     # ── Generate report ───────────────────────────────────────────────────
     report_dir = os.path.join(PROJECT_ROOT, drift_cfg["report_output_dir"])
     report_path = generate_report(results, report_dir)
+    log.info(f"Report written to {report_path}")
 
     # ── Print console summary ─────────────────────────────────────────────
     print_summary(results)

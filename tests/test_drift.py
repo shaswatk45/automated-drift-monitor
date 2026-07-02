@@ -14,7 +14,6 @@ import sys
 
 import numpy as np
 import pandas as pd
-import pytest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -121,8 +120,8 @@ class TestNumericDriftCheck:
 
     def _make_detector(self, tmp_path) -> DriftDetector:
         """Build a minimal DriftDetector pointing at temp files."""
-        import json, joblib
-        from sklearn.preprocessing import LabelEncoder
+        import json
+        import joblib
 
         # Baseline stats
         baseline_stats = {

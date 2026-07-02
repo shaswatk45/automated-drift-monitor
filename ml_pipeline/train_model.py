@@ -17,7 +17,6 @@ import json
 import logging
 from datetime import datetime
 
-import numpy as np
 import joblib
 from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
 from sklearn.ensemble import RandomForestClassifier

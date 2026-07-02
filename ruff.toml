@@ -1,0 +1,9 @@
+# Ruff configuration for the Automated Drift Monitor.
+line-length = 120
+
+[lint]
+select = ["E", "F", "W"]
+# E402: several entrypoints (backend/main.py, monitoring/run_drift_check.py,
+#       tests) intentionally manipulate sys.path before importing project
+#       modules, so module-level imports are not all at the top of the file.
+ignore = ["E501", "E402"]

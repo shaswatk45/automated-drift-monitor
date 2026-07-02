@@ -1,0 +1,229 @@
+{
+  "timestamp": "2026-07-02T19:03:20.273938+00:00",
+  "dataset_size": 614,
+  "overall_drift": true,
+  "drift_score": 0.1818,
+  "drifted_features": [
+    "ApplicantIncome",
+    "Credit_History"
+  ],
+  "feature_results": {
+    "Gender": {
+      "feature_type": "categorical",
+      "baseline_distribution": {
+        "Male": 0.796417,
+        "Female": 0.18241,
+        "Unknown": 0.021173
+      },
+      "production_distribution": {
+        "Male": 0.796417,
+        "Female": 0.18241,
+        "Unknown": 0.021173
+      },
+      "baseline_mean": 0.7964,
+      "production_mean": 0.7964,
+      "drift_detected": false,
+      "severity": "stable",
+      "metrics": {
+        "max_category_shift": 0.0,
+        "js_divergence": 0.0
+      },
+      "reasons": []
+    },
+    "Married": {
+      "feature_type": "categorical",
+      "baseline_distribution": {
+        "Yes": 0.648208,
+        "No": 0.346906,
+        "Unknown": 0.004886
+      },
+      "production_distribution": {
+        "Yes": 0.648208,
+        "No": 0.346906,
+        "Unknown": 0.004886
+      },
+      "baseline_mean": 0.6482,
+      "production_mean": 0.6482,
+      "drift_detected": false,
+      "severity": "stable",
+      "metrics": {
+        "max_category_shift": 0.0,
+        "js_divergence": 0.0
+      },
+      "reasons": []
+    },
+    "Dependents": {
+      "feature_type": "categorical",
+      "baseline_distribution": {
+        "0": 0.561889,
+        "1": 0.166124,
+        "2": 0.164495,
+        "3+": 0.083062,
+        "Unknown": 0.02443
+      },
+      "production_distribution": {
+        "0": 0.561889,
+        "1": 0.166124,
+        "2": 0.164495,
+        "3+": 0.083062,
+        "Unknown": 0.02443
+      },
+      "baseline_mean": 0.5619,
+      "production_mean": 0.5619,
+      "drift_detected": false,
+      "severity": "stable",
+      "metrics": {
+        "max_category_shift": 0.0,
+        "js_divergence": 0.0
+      },
+      "reasons": []
+    },
+    "Education": {
+      "feature_type": "categorical",
+      "baseline_distribution": {
+        "Graduate": 0.781759,
+        "Not Graduate": 0.218241
+      },
+      "production_distribution": {
+        "Graduate": 0.781759,
+        "Not Graduate": 0.218241
+      },
+      "baseline_mean": 0.7818,
+      "production_mean": 0.7818,
+      "drift_detected": false,
+      "severity": "stable",
+      "metrics": {
+        "max_category_shift": 0.0,
+        "js_divergence": 0.0
+      },
+      "reasons": []
+    },
+    "Self_Employed": {
+      "feature_type": "categorical",
+      "baseline_distribution": {
+        "No": 0.814332,
+        "Yes": 0.13355,
+        "Unknown": 0.052117
+      },
+      "production_distribution": {
+        "No": 0.814332,
+        "Yes": 0.13355,
+        "Unknown": 0.052117
+      },
+      "baseline_mean": 0.8143,
+      "production_mean": 0.8143,
+      "drift_detected": false,
+      "severity": "stable",
+      "metrics": {
+        "max_category_shift": 0.0,
+        "js_divergence": 0.0
+      },
+      "reasons": []
+    },
+    "ApplicantIncome": {
+      "feature_type": "numeric",
+      "baseline_mean": 5529.998,
+      "production_mean": 1080.6919,
+      "drift_detected": true,
+      "severity": "critical",
+      "metrics": {
+        "psi": 4.2101,
+        "ks_stat": 0.8599,
+        "ks_pvalue": 0.0,
+        "mean_shift_sigma": 0.689
+      },
+      "reasons": [
+        "[KS-Test] Failed. p-value=0.0000 (<0.05) indicates mathematical distribution shift.",
+        "[PSI] Failed. Score=4.2101 (>0.2) indicates significant population shift."
+      ]
+    },
+    "CoapplicantIncome": {
+      "feature_type": "numeric",
+      "baseline_mean": 1569.5373,
+      "production_mean": 1621.2458,
+      "drift_detected": false,
+      "severity": "stable",
+      "metrics": {
+        "psi": 0.0,
+        "ks_stat": 0.0,
+        "ks_pvalue": 1.0,
+        "mean_shift_sigma": 0.0185
+      },
+      "reasons": []
+    },
+    "LoanAmount": {
+      "feature_type": "numeric",
+      "baseline_mean": 146.5234,
+      "production_mean": 145.7524,
+      "drift_detected": false,
+      "severity": "stable",
+      "metrics": {
+        "psi": 0.0,
+        "ks_stat": 0.0,
+        "ks_pvalue": 1.0,
+        "mean_shift_sigma": 0.009
+      },
+      "reasons": []
+    },
+    "Loan_Amount_Term": {
+      "feature_type": "numeric",
+      "baseline_mean": 341.7434,
+      "production_mean": 342.4104,
+      "drift_detected": false,
+      "severity": "stable",
+      "metrics": {
+        "psi": 0.0,
+        "ks_stat": 0.0,
+        "ks_pvalue": 1.0,
+        "mean_shift_sigma": 0.0102
+      },
+      "reasons": []
+    },
+    "Credit_History": {
+      "feature_type": "numeric",
+      "baseline_mean": 0.8635,
+      "production_mean": 0.1922,
+      "drift_detected": true,
+      "severity": "critical",
+      "metrics": {
+        "psi": 2.1282,
+        "ks_stat": 0.6629,
+        "ks_pvalue": 0.0,
+        "mean_shift_sigma": 1.9538
+      },
+      "reasons": [
+        "[KS-Test] Failed. p-value=0.0000 (<0.05) indicates mathematical distribution shift.",
+        "[PSI] Failed. Score=2.1282 (>0.2) indicates significant population shift."
+      ]
+    },
+    "Property_Area": {
+      "feature_type": "categorical",
+      "baseline_distribution": {
+        "Semiurban": 0.379479,
+        "Urban": 0.32899,
+        "Rural": 0.291531
+      },
+      "production_distribution": {
+        "Semiurban": 0.379479,
+        "Urban": 0.32899,
+        "Rural": 0.291531
+      },
+      "baseline_mean": 0.3795,
+      "production_mean": 0.3795,
+      "drift_detected": false,
+      "severity": "stable",
+      "metrics": {
+        "max_category_shift": 0.0,
+        "js_divergence": 0.0
+      },
+      "reasons": []
+    }
+  },
+  "summary": {
+    "total_features": 11,
+    "drifted_count": 2,
+    "stable_count": 9,
+    "critical_count": 2,
+    "warning_count": 0
+  }
+}
