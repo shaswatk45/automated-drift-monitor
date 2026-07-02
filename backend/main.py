@@ -13,6 +13,7 @@
 import logging
 import os
 import sys
+from contextlib import asynccontextmanager
 
 import yaml
 import uvicorn
@@ -42,6 +43,18 @@ with open(config_path, "r") as f:
     config = yaml.safe_load(f)
 log.info(f"Config loaded from {config_path}")
 
+# ── Lifespan handler (replaces deprecated @app.on_event) ──────────────────────
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    log.info("=" * 60)
+    log.info("  Automated Drift Monitor API is starting...")
+    log.info(f"  Docs available at: http://localhost:{config['backend']['port']}/docs")
+    log.info("=" * 60)
+    yield
+    log.info("Automated Drift Monitor API shutting down.")
+
+
 # ── Create FastAPI app ────────────────────────────────────────────────────────
 app = FastAPI(
     title="Automated Drift Monitor API",
@@ -50,17 +63,25 @@ app = FastAPI(
         "Provides endpoints for loan predictions, drift detection, and report retrieval."
     ),
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 # ── CORS middleware ───────────────────────────────────────────────────────────
-# Allow all origins so the frontend (any port) can talk to this API.
-# In production, you would restrict this to your actual frontend domain.
+# Allowed origins come from the CORS_ALLOW_ORIGINS env var (comma-separated),
+# falling back to a permissive dev default. Per the CORS spec, credentials
+# cannot be combined with a "*" wildcard, so we disable credentials in that
+# case to keep the configuration valid and browsers happy.
+_cors_env = os.environ.get("CORS_ALLOW_ORIGINS", "*").strip()
+_allow_origins = [o.strip() for o in _cors_env.split(",") if o.strip()]
+_allow_credentials = _allow_origins != ["*"]
+log.info(f"CORS allow_origins={_allow_origins} allow_credentials={_allow_credentials}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],          # allow all origins for development
-    allow_credentials=True,
-    allow_methods=["*"],          # allow all HTTP methods
-    allow_headers=["*"],          # allow all headers
+    allow_origins=_allow_origins,
+    allow_credentials=_allow_credentials,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # ── Initialize shared dependencies ────────────────────────────────────────────
@@ -115,16 +136,6 @@ init_routes(
 
 # Include all routes
 app.include_router(router)
-
-# ── Startup event ─────────────────────────────────────────────────────────────
-
-@app.on_event("startup")
-async def startup_event():
-    log.info("=" * 60)
-    log.info("  Automated Drift Monitor API is starting...")
-    log.info(f"  Docs available at: http://localhost:{config['backend']['port']}/docs")
-    log.info("=" * 60)
-
 
 # ── Entrypoint ────────────────────────────────────────────────────────────────
 

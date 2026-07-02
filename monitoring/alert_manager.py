@@ -14,7 +14,7 @@
 import logging
 import os
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 log = logging.getLogger(__name__)
@@ -67,7 +67,7 @@ class FileAlertChannel(AlertChannel):
         os.makedirs(os.path.dirname(self.path), exist_ok=True)
 
     def send(self, subject: str, body: str) -> bool:
-        timestamp = datetime.utcnow().isoformat()
+        timestamp = datetime.now(timezone.utc).isoformat()
         try:
             with open(self.path, "a") as f:
                 f.write(f"\n{'=' * 60}\n")

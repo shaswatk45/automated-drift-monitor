@@ -29,7 +29,7 @@
 import json
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 import joblib
 import numpy as np
@@ -54,6 +54,24 @@ def calculate_psi(expected, actual, buckets=10):
     
     psi_value = np.sum((actual_percents - expected_percents) * np.log(actual_percents / expected_percents))
     return float(psi_value)
+
+
+def _js_divergence(dist_a: dict, dist_b: dict, categories) -> float:
+    """
+    Jensen-Shannon divergence between two categorical distributions.
+
+    Symmetric and bounded in [0, ln(2)] (0 = identical distributions).
+    A small epsilon avoids log(0) for categories missing from one side.
+    """
+    eps = 1e-9
+    p = np.array([dist_a.get(c, 0.0) + eps for c in categories])
+    q = np.array([dist_b.get(c, 0.0) + eps for c in categories])
+    p = p / p.sum()
+    q = q / q.sum()
+    m = 0.5 * (p + q)
+    kl = lambda x, y: float(np.sum(x * np.log(x / y)))
+    return 0.5 * kl(p, m) + 0.5 * kl(q, m)
+
 
 log = logging.getLogger(__name__)
 
@@ -308,17 +326,29 @@ class DriftDetector:
                 f"production_max={production['max']:.4f})"
             )
 
+        # -- Structured metrics (so the API/frontend can chart them, not just
+        #    parse them out of free-text reason strings) --
+        mean_shift_sigma = (
+            round(abs(production["mean"] - baseline["mean"]) / baseline_std, 4)
+            if baseline_std > 0 else None
+        )
+        psi_val = None
+        ks_stat = None
+        ks_pvalue = None
+
         # -- Check 3: Statistical Tests (KS-Test and PSI) --
         base_series = self.raw_baseline_df.get(feature)
         if base_series is not None and not base_series.empty and not prod_series.empty:
             # KS Test
             stat, p_value = ks_2samp(base_series, prod_series)
+            ks_stat = round(float(stat), 4)
+            ks_pvalue = round(float(p_value), 6)
             if p_value < 0.05:
                 reasons.append(f"[KS-Test] Failed. p-value={p_value:.4f} (<0.05) indicates mathematical distribution shift.")
-            
+
             # PSI
             try:
-                psi_val = calculate_psi(base_series.values, prod_series.values)
+                psi_val = round(calculate_psi(base_series.values, prod_series.values), 4)
                 if psi_val > 0.2:
                     reasons.append(f"[PSI] Failed. Score={psi_val:.4f} (>0.2) indicates significant population shift.")
                 elif psi_val > 0.1:
@@ -326,11 +356,27 @@ class DriftDetector:
             except Exception as e:
                 log.error(f"Failed to calculate PSI for {feature}: {e}")
 
+        # -- Severity classification: critical > warning > stable --
+        severity = "stable"
+        if (psi_val is not None and psi_val > 0.2) or \
+           (ks_pvalue is not None and ks_pvalue < 0.01) or \
+           (mean_shift_sigma is not None and mean_shift_sigma > mean_threshold):
+            severity = "critical"
+        elif reasons:
+            severity = "warning"
+
         return {
             "feature_type":    "numeric",
             "baseline_mean":   round(baseline["mean"], 4),
             "production_mean": round(production["mean"], 4),
             "drift_detected":  len(reasons) > 0,
+            "severity":        severity,
+            "metrics": {
+                "psi":              psi_val,
+                "ks_stat":          ks_stat,
+                "ks_pvalue":        ks_pvalue,
+                "mean_shift_sigma": mean_shift_sigma,
+            },
             "reasons":         reasons,
         }
 
@@ -351,6 +397,8 @@ class DriftDetector:
         cat_threshold = self.thresholds.get("categorical_frequency_threshold", 0.15)
         reasons = []
 
+        empty_metrics = {"max_category_shift": None, "js_divergence": None}
+
         baseline_dist = self.baseline_category_dist.get(feature, {})
         if not baseline_dist:
             return {
@@ -358,6 +406,8 @@ class DriftDetector:
                 "baseline_mean":       None,
                 "production_mean":     None,
                 "drift_detected":      False,
+                "severity":            "stable",
+                "metrics":             empty_metrics,
                 "reasons":             ["No baseline distribution available"],
             }
 
@@ -369,6 +419,8 @@ class DriftDetector:
                 "baseline_mean":       None,
                 "production_mean":     None,
                 "drift_detected":      False,
+                "severity":            "stable",
+                "metrics":             empty_metrics,
                 "reasons":             ["Feature not found in production data"],
             }
 
@@ -379,21 +431,33 @@ class DriftDetector:
         # Compare every category that appears in either distribution
         all_categories = set(list(baseline_dist.keys()) + list(prod_dist.keys()))
 
+        max_shift = 0.0
         for cat in sorted(all_categories):
             base_pct = baseline_dist.get(cat, 0.0)
             prod_pct = prod_dist.get(cat, 0.0)
             delta = abs(prod_pct - base_pct)
+            max_shift = max(max_shift, delta)
             if delta > cat_threshold:
                 reasons.append(
                     f"Category '{cat}' frequency changed by {delta:.2f} "
                     f"(baseline={base_pct:.2%}, production={prod_pct:.2%})"
                 )
 
+        # Jensen-Shannon divergence over the category distributions
+        # (0 = identical, ln(2) ~= 0.693 = maximally different).
+        js_div = _js_divergence(baseline_dist, prod_dist, all_categories)
+
         # For the summary table, show the most-frequent category's baseline
         # and production percentages as a representative "mean" value
         top_baseline_cat = max(baseline_dist, key=baseline_dist.get) if baseline_dist else None
         baseline_mean_repr = baseline_dist.get(top_baseline_cat, 0.0) if top_baseline_cat else None
         production_mean_repr = prod_dist.get(top_baseline_cat, 0.0) if top_baseline_cat else None
+
+        severity = "stable"
+        if js_div > 0.1 or max_shift > 2 * cat_threshold:
+            severity = "critical"
+        elif reasons:
+            severity = "warning"
 
         return {
             "feature_type":          "categorical",
@@ -402,6 +466,11 @@ class DriftDetector:
             "baseline_mean":         round(baseline_mean_repr, 4) if baseline_mean_repr is not None else None,
             "production_mean":       round(production_mean_repr, 4) if production_mean_repr is not None else None,
             "drift_detected":        len(reasons) > 0,
+            "severity":              severity,
+            "metrics": {
+                "max_category_shift": round(max_shift, 4),
+                "js_divergence":      round(js_div, 4),
+            },
             "reasons":               reasons,
         }
 
@@ -460,7 +529,7 @@ class DriftDetector:
           - drifted_features : list of feature names that drifted
           - feature_results  : dict of feature -> {baseline_mean, production_mean, ...}
         """
-        now = datetime.utcnow().isoformat()
+        now = datetime.now(timezone.utc).isoformat()
         dataset_size = len(production_df)
 
         # ── Safeguard: minimum sample size ────────────────────────────────
@@ -519,17 +588,28 @@ class DriftDetector:
             feature_results[feature] = result
 
         overall_drift = len(drifted_features) > 0
+        total = len(feature_results)
+
+        # Severity tally + a single 0..1 drift score. Critical features are
+        # weighted double so the score reflects *how bad* the drift is, not
+        # just how many features moved.
+        critical = sum(1 for r in feature_results.values() if r.get("severity") == "critical")
+        warning = sum(1 for r in feature_results.values() if r.get("severity") == "warning")
+        drift_score = round(min(1.0, (critical + 0.5 * warning) / total), 4) if total else 0.0
 
         results = {
             "timestamp":        now,
             "dataset_size":     dataset_size,
             "overall_drift":    overall_drift,
+            "drift_score":      drift_score,
             "drifted_features": drifted_features,
             "feature_results":  feature_results,
             "summary": {
-                "total_features": len(feature_results),
+                "total_features": total,
                 "drifted_count":  len(drifted_features),
-                "stable_count":   len(feature_results) - len(drifted_features),
+                "stable_count":   total - len(drifted_features),
+                "critical_count": critical,
+                "warning_count":  warning,
             },
         }
 

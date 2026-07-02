@@ -27,7 +27,7 @@
 import os
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 log = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ def generate_report(drift_results: dict, output_dir: str) -> str:
     os.makedirs(output_dir, exist_ok=True)
 
     # Create a filename with the current timestamp so reports never overwrite
-    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     filename = f"drift_report_{timestamp}.json"
     filepath = os.path.join(output_dir, filename)
 

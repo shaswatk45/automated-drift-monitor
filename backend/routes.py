@@ -9,18 +9,21 @@
 #   POST /drift/run             — upload CSV, run drift check, return results
 #   GET  /drift/reports         — list all saved drift reports
 #   GET  /drift/reports/{name}  — fetch a specific report
+#   GET  /drift/reports/{name}/download — download a report as an attachment
+#   DELETE /drift/reports/{name} — delete a specific report
 #   GET  /drift/latest          — fetch the most recent report
+#   GET  /drift/history         — time series of drift scores for trend charts
 # ──────────────────────────────────────────────────────────────────────────────
 
 import io
 import json
 import logging
 import os
-import tempfile
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pandas as pd
 from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 log = logging.getLogger(__name__)
@@ -93,7 +96,7 @@ def health_check():
     """
     return {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
 
@@ -161,10 +164,13 @@ async def run_drift_check(file: UploadFile = File(...)):
         production_df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
         log.info(f"Uploaded file '{file.filename}' -- shape: {production_df.shape}")
 
-        # Also save the uploaded file to data/production/ for record-keeping
+        # Also save the uploaded file to data/production/ for record-keeping.
+        # Sanitize the filename to its basename so a crafted name like
+        # "../../evil.csv" cannot escape the production directory.
         prod_dir = os.path.join(_project_root, _config["drift_detection"]["production_data_dir"])
         os.makedirs(prod_dir, exist_ok=True)
-        save_path = os.path.join(prod_dir, file.filename)
+        safe_name = os.path.basename(file.filename)
+        save_path = os.path.join(prod_dir, safe_name)
         production_df.to_csv(save_path, index=False)
         log.info(f"Saved uploaded file to {save_path}")
 
@@ -224,3 +230,40 @@ def get_latest_drift_report():
     if report is None:
         raise HTTPException(status_code=404, detail="No drift reports found")
     return report
+
+
+# ── Endpoint: Drift history (time series) ─────────────────────────────────────
+
+@router.get("/drift/history", tags=["Drift Detection"])
+def get_drift_history(limit: int = 100):
+    """
+    Return a time-ordered (oldest-first) history of drift runs for trend
+    charts: each point has timestamp, drift_score, and drift counts.
+    """
+    limit = max(1, min(limit, 500))
+    return {"points": _report_store.history(limit=limit)}
+
+
+# ── Endpoint: Download a report as a file ─────────────────────────────────────
+
+@router.get("/drift/reports/{filename}/download", tags=["Drift Detection"])
+def download_drift_report(filename: str):
+    """Download a specific report as a JSON attachment."""
+    report = _report_store.get_report(filename)
+    if report is None:
+        raise HTTPException(status_code=404, detail=f"Report '{filename}' not found")
+    return JSONResponse(
+        content=report,
+        headers={"Content-Disposition": f'attachment; filename="{os.path.basename(filename)}"'},
+    )
+
+
+# ── Endpoint: Delete a report ─────────────────────────────────────────────────
+
+@router.delete("/drift/reports/{filename}", tags=["Drift Detection"])
+def delete_drift_report(filename: str):
+    """Delete a specific drift report. Returns 404 if it does not exist."""
+    ok = _report_store.delete_report(filename)
+    if not ok:
+        raise HTTPException(status_code=404, detail=f"Report '{filename}' not found")
+    return {"deleted": filename}

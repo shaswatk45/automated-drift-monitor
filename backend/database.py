@@ -42,6 +42,20 @@ class ReportStore:
         # Ensure the directory exists
         os.makedirs(self.report_dir, exist_ok=True)
 
+    def _safe_path(self, filename: str) -> Optional[str]:
+        """
+        Resolve ``filename`` to an absolute path *inside* report_dir, or return
+        None if it escapes the directory (path-traversal guard). Only bare
+        ``.json`` filenames are accepted — no sub-paths, no ``..``.
+        """
+        if not filename.endswith(".json") or "/" in filename or "\\" in filename:
+            return None
+        base = os.path.realpath(self.report_dir)
+        target = os.path.realpath(os.path.join(base, filename))
+        if os.path.commonpath([base, target]) != base:
+            return None
+        return target
+
     def list_reports(self) -> list:
         """
         Return a sorted list of all drift report filenames (newest first).
@@ -82,7 +96,10 @@ class ReportStore:
         dict or None
             The parsed JSON contents of the report, or None if not found.
         """
-        filepath = os.path.join(self.report_dir, filename)
+        filepath = self._safe_path(filename)
+        if filepath is None:
+            log.warning(f"Rejected unsafe report filename: {filename!r}")
+            return None
         if not os.path.exists(filepath):
             log.warning(f"Report not found: {filepath}")
             return None
@@ -91,6 +108,45 @@ class ReportStore:
             report = json.load(f)
         log.info(f"Loaded report: {filename}")
         return report
+
+    def delete_report(self, filename: str) -> bool:
+        """
+        Delete a report by filename. Returns True if a file was removed,
+        False if it did not exist or the filename was unsafe.
+        """
+        filepath = self._safe_path(filename)
+        if filepath is None:
+            log.warning(f"Rejected unsafe delete filename: {filename!r}")
+            return False
+        if not os.path.exists(filepath):
+            return False
+        os.remove(filepath)
+        log.info(f"Deleted report: {filename}")
+        return True
+
+    def history(self, limit: int = 100) -> list:
+        """
+        Return a lightweight, time-ordered (oldest-first) history of drift
+        runs for trend charts: timestamp, drift_score, counts, overall_drift.
+        """
+        points = []
+        for meta in self.list_reports():
+            report = self.get_report(meta["filename"])
+            if not report:
+                continue
+            summary = report.get("summary", {})
+            points.append({
+                "filename":       meta["filename"],
+                "timestamp":      report.get("timestamp"),
+                "drift_score":    report.get("drift_score", 0.0),
+                "overall_drift":  report.get("overall_drift", False),
+                "drifted_count":  summary.get("drifted_count", 0),
+                "total_features": summary.get("total_features", 0),
+                "critical_count": summary.get("critical_count", 0),
+            })
+        # Oldest-first is friendlier for time-series charts.
+        points.sort(key=lambda p: p["timestamp"] or "")
+        return points[-limit:]
 
     def get_latest_report(self) -> Optional[dict]:
         """
