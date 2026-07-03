@@ -1,31 +1,59 @@
 import { useState, useRef, useEffect } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import {
-    LayoutDashboard, Activity, FileText, FlaskConical, Settings, Cpu,
+    LayoutDashboard, Activity, FileText, FlaskConical, Settings, Cpu, Menu, X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { getHealth } from '@/lib/api'
+import { AuroraBackground } from '@/components/ui/aurora-background'
+import { ThemeToggle } from './ThemeToggle'
 
 const navItems = [
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/drift', label: 'Drift Monitoring', icon: Activity },
+    { to: '/drift', label: 'Drift', icon: Activity },
     { to: '/reports', label: 'Reports', icon: FileText },
-    { to: '/predict', label: 'Prediction Tester', icon: FlaskConical },
+    { to: '/predict', label: 'Predict', icon: FlaskConical },
     { to: '/settings', label: 'Settings', icon: Settings },
 ]
 
-/* ── Animated nav link text ── */
-function AnimatedNavText({ children, isActive }: { children: React.ReactNode; isActive: boolean }) {
+/** Live backend status dot - polls /health every 30s. */
+function BackendStatusDot() {
+    const [status, setStatus] = useState<'up' | 'down' | 'checking'>('checking')
+
+    useEffect(() => {
+        let cancelled = false
+        const check = () =>
+            getHealth()
+                .then(() => { if (!cancelled) setStatus('up') })
+                .catch(() => { if (!cancelled) setStatus('down') })
+        check()
+        const id = setInterval(check, 30_000)
+        return () => { cancelled = true; clearInterval(id) }
+    }, [])
+
+    const color =
+        status === 'up' ? 'var(--success)' :
+            status === 'down' ? 'var(--critical)' : 'var(--muted-foreground)'
+    const label = status === 'up' ? 'API online' : status === 'down' ? 'API offline' : 'Checking...'
+
     return (
-        <span className={cn(
-            'transition-colors duration-200',
-            isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'
-        )}>
-            {children}
+        <span
+            title={label}
+            className="hidden md:inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--secondary)]/60 px-3 py-1.5 text-xs text-[var(--muted-foreground)]"
+        >
+            <span className="relative flex h-2 w-2">
+                {status === 'up' && (
+                    <span
+                        className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-50"
+                        style={{ backgroundColor: color }}
+                    />
+                )}
+                <span className="relative inline-flex h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
+            </span>
+            {label}
         </span>
     )
 }
-
-import { ThemeToggle } from './ThemeToggle'
 
 export function Layout() {
     const [mobileOpen, setMobileOpen] = useState(false)
@@ -50,23 +78,27 @@ export function Layout() {
 
     return (
         <div className="flex flex-col min-h-screen bg-[var(--background)] text-[var(--foreground)] transition-colors duration-500">
-            {/* ── Floating Top Navbar ── */}
+            {/* One shared, subtle backdrop for the whole console (theme-aware) */}
+            <div className="fixed inset-0 z-0 pointer-events-none opacity-40 dark:opacity-60">
+                <AuroraBackground />
+            </div>
+
+            {/* Floating top navbar */}
             <header className={cn(
-                'fixed top-5 left-1/2 -translate-x-1/2 z-50',
+                'fixed top-4 left-1/2 -translate-x-1/2 z-50',
                 'flex flex-col items-center',
-                'px-8 py-4 glassmorphism',
+                'px-5 sm:px-6 py-3 glassmorphism shadow-lg',
                 headerShape,
                 'w-[calc(100%-2rem)] sm:w-auto',
                 'transition-all duration-300 ease-in-out'
             )}>
-                {/* Desktop row */}
-                <div className="flex items-center justify-between w-full gap-x-8">
+                <div className="flex items-center justify-between w-full gap-x-6">
                     {/* Brand */}
-                    <NavLink to="/dashboard" className="flex items-center gap-3 shrink-0">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--primary)] shadow-lg shadow-[var(--primary)]/20">
+                    <NavLink to="/dashboard" className="flex items-center gap-2.5 shrink-0">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--primary)] shadow-lg shadow-[var(--primary)]/25">
                             <Cpu className="h-4.5 w-4.5 text-white" />
                         </div>
-                        <span className="text-[11px] font-bold tracking-[0.3em] text-[var(--foreground)] hidden sm:inline uppercase font-['Syncopate']">
+                        <span className="text-[11px] font-bold tracking-[0.25em] uppercase font-['Syncopate']">
                             Drift Monitor
                         </span>
                     </NavLink>
@@ -74,54 +106,33 @@ export function Layout() {
                     {/* Desktop nav links */}
                     <nav className="hidden sm:flex items-center gap-1">
                         {navItems.map(({ to, label, icon: Icon }) => (
-                            <NavLink
-                                key={to}
-                                to={to}
-                                end={to === '/dashboard'}
-                                className="group"
-                            >
+                            <NavLink key={to} to={to} end={to === '/dashboard'} className="group">
                                 {({ isActive }) => (
                                     <div className={cn(
-                                        'flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200',
+                                        'flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-medium transition-all duration-200',
                                         isActive
                                             ? 'bg-[var(--primary)]/15 text-[var(--primary)] shadow-sm'
                                             : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--secondary)]'
                                     )}>
-                                        <Icon className="h-4.5 w-4.5" />
-                                        <span className="transition-colors duration-200">{label}</span>
+                                        <Icon className="h-4 w-4" />
+                                        <span>{label}</span>
                                     </div>
                                 )}
                             </NavLink>
                         ))}
                     </nav>
 
-                    <div className="flex items-center gap-3">
-                        {/* Status pill */}
-                        <div className="hidden sm:flex items-center gap-2">
-                            <span className="inline-flex items-center gap-2 rounded-full bg-[var(--secondary)]/60 border border-[var(--border)] px-4 py-2 text-sm text-[var(--muted-foreground)]">
-                                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                                v1.0.0
-                            </span>
-                        </div>
-
-                        {/* Theme Toggle */}
+                    <div className="flex items-center gap-2.5">
+                        <BackendStatusDot />
                         <ThemeToggle />
 
                         {/* Mobile hamburger */}
                         <button
-                            className="sm:hidden flex items-center justify-center w-8 h-8 text-[var(--foreground)]"
+                            className="sm:hidden flex items-center justify-center w-9 h-9 rounded-full hover:bg-[var(--secondary)] transition-colors"
                             onClick={() => setMobileOpen(!mobileOpen)}
                             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
                         >
-                            {mobileOpen ? (
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            ) : (
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                                </svg>
-                            )}
+                            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                         </button>
                     </div>
                 </div>
@@ -152,10 +163,18 @@ export function Layout() {
                 </div>
             </header>
 
-            {/* ── Main Content ── */}
-            <main className="flex-1 pt-20">
+            {/* Main content */}
+            <main className="relative z-10 flex-1 pt-24">
                 <Outlet />
             </main>
+
+            {/* Footer */}
+            <footer className="relative z-10 mx-auto w-full max-w-7xl px-6 pb-6 pt-10">
+                <div className="border-t border-[var(--border)] pt-4 flex items-center justify-between text-xs text-[var(--muted-foreground)]">
+                    <span>Automated Drift Monitor</span>
+                    <span className="font-mono">PSI &middot; KS-Test &middot; SHAP</span>
+                </div>
+            </footer>
         </div>
     )
 }

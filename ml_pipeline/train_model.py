@@ -168,7 +168,8 @@ def main():
 
     save_artifacts(model, encoders, metrics, baseline_stats, list(X.columns), CONFIG)
 
-    log.info("✅ Training complete")
+    # Plain ASCII: the Windows console (cp1252) chokes on emoji in log output
+    log.info("[OK] Training complete")
 
 
 if __name__ == "__main__":

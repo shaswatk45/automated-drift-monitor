@@ -1,5 +1,5 @@
 {
-  "trained_at": "2026-03-30T18:24:53.007223",
+  "trained_at": "2026-07-03T08:29:45.617152",
   "model_version": "1.0.0",
   "feature_names": [
     "Gender",
@@ -28,5 +28,18 @@
     "class_weight": "balanced",
     "random_state": 42,
     "n_jobs": -1
+  },
+  "feature_importance": {
+    "Gender": 0.020331,
+    "Married": 0.024698,
+    "Dependents": 0.052406,
+    "Education": 0.024614,
+    "Self_Employed": 0.025629,
+    "ApplicantIncome": 0.187147,
+    "CoapplicantIncome": 0.121355,
+    "LoanAmount": 0.171691,
+    "Loan_Amount_Term": 0.050384,
+    "Credit_History": 0.272685,
+    "Property_Area": 0.049059
   }
 }

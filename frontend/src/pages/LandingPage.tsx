@@ -1,87 +1,64 @@
-"use client";
-
-import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import AnimatedShaderHero from "@/components/ui/animated-shader-hero";
-import { PulseBeams } from "@/components/ui/pulse-beams";
-import { cn } from "@/lib/utils";
+import { Activity, BrainCircuit, BellRing } from "lucide-react";
 
-const ctaBeams = [
-  {
-    path: "M0 100H200",
-    gradientConfig: {
-      initial: { x1: "0%", x2: "0%", y1: "0%", y2: "0%" },
-    animate: { 
-      x1: ["0%", "100%"], 
-      x2: ["-10%", "90%"],
-      y1: ["0%", "0%"],
-      y2: ["0%", "0%"]
-    },
-      transition: { duration: 2, repeat: Infinity, ease: "linear" }
-    }
-  },
-  {
-    path: "M800 100H1000",
-    gradientConfig: {
-      initial: { x1: "100%", x2: "100%", y1: "0%", y2: "0%" },
-    animate: { 
-      x1: ["100%", "0%"], 
-      x2: ["110%", "10%"],
-      y1: ["0%", "0%"],
-      y2: ["0%", "0%"]
-    },
-      transition: { duration: 2, repeat: Infinity, ease: "linear", delay: 1 }
-    }
-  }
+const features = [
+  { icon: Activity, label: "PSI + KS-Test drift detection" },
+  { icon: BrainCircuit, label: "SHAP explainability" },
+  { icon: BellRing, label: "Severity-graded alerts" },
 ];
 
 export default function LandingPage() {
-  const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
 
   return (
-    <div className="relative min-h-screen w-full bg-[#0b0b0b] text-white overflow-hidden font-sans tracking-tight">
-      
+    <div className="relative min-h-screen w-full overflow-hidden bg-[#0b0b0b] font-sans tracking-tight text-white">
       <AnimatedShaderHero
         headline={{
           line1: "ML Health",
-          line2: "Monitor"
+          line2: "Monitor",
         }}
         subtitle="Detect data drift. Maintain model health. Real-time observability for production machine learning systems."
         buttons={{
-            primary: {
-                text: "Enter Monitoring Console",
-                onClick: () => navigate("/dashboard")
-            }
+          primary: {
+            text: "Enter Monitoring Console",
+            onClick: () => navigate("/dashboard"),
+          },
         }}
       >
-        {/* Background Typography (Animated) */}
-        <motion.div 
+        {/* Background typography */}
+        <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 0.1, y: 20 }}
           transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
-          className="w-full flex items-center justify-center py-20 translate-y-20"
+          className="flex w-full translate-y-20 items-center justify-center py-20"
         >
-            <h1 className="text-[15vw] md:text-[25vw] font-black text-white tracking-[-0.05em] uppercase leading-none">
+          <h1 className="text-[15vw] font-black uppercase leading-none tracking-[-0.05em] text-white md:text-[25vw]">
             MONITOR
-            </h1>
+          </h1>
         </motion.div>
       </AnimatedShaderHero>
 
-      {/* Pulse Beams Layer */}
-      <div className="absolute bottom-0 left-0 w-full h-1/4 z-0 pointer-events-none opacity-30">
-        <PulseBeams 
-            beams={ctaBeams} 
-            width={1000} 
-            height={200}
-            gradientColors={{
-                start: "#3b82f6",
-                middle: "#60a5fa",
-                end: "#93c5fd"
-            }}
-        />
-      </div>
+      {/* Feature strip */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 1.2 }}
+        className="pointer-events-none absolute bottom-8 left-0 z-10 flex w-full items-center justify-center px-6"
+      >
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          {features.map(({ icon: Icon, label }) => (
+            <span
+              key={label}
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-medium text-white/70 backdrop-blur-md"
+            >
+              <Icon className="h-3.5 w-3.5 text-white/50" />
+              {label}
+            </span>
+          ))}
+        </div>
+      </motion.div>
     </div>
   );
 }
