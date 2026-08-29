@@ -172,7 +172,7 @@ curl http://localhost:8000/drift/latest
 ### Option C: Via CLI Script
 ```bash
 # Run drift check directly (exits with code 1 if drift detected)
-python monitoring/run_drift_check.py --data sample_drifted_data.csv
+python monitoring/run_drift_check.py --input sample_drifted_data.csv
 
 # Use in CI/CD pipelines — exit code indicates drift status
 echo $?   # 0 = no drift, 1 = drift detected
